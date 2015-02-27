@@ -69,11 +69,11 @@ class xmap_com_content
                     // TODO wtf?
                     $text = @$item->introtext . @$item->fulltext;
                     if ($params['add_images']) {
-                        $node->images = XmapHelperAdmin::getImages($text, JArrayHelper::getValue($params, 'max_images', 1000));
+                        $node->images = XmapHelper::getImages($text, JArrayHelper::getValue($params, 'max_images', 1000));
                     }
 
                     if ($params['add_pagebreaks']) {
-                        $node->subnodes = XmapHelperAdmin::getPagebreaks($text, $node->link);
+                        $node->subnodes = XmapHelper::getPagebreaks($text, $node->link);
                         $node->expandible = (count($node->subnodes) > 0); // This article has children
                     }
                 }
@@ -239,7 +239,7 @@ class xmap_com_content
                     $parent->slug = $row->alias ? ($id . ':' . $row->alias) : $id;
                     $parent->link = ContentHelperRoute::getArticleRoute($parent->slug, $row->catid);
 
-                    $subnodes = XmapHelperAdmin::getPagebreaks($row->introtext . $row->fulltext, $parent->link);
+                    $subnodes = XmapHelper::getPagebreaks($row->introtext . $row->fulltext, $parent->link);
                     self::printNodes($xmap, $parent, $params, $subnodes);
                 }
 
@@ -418,11 +418,11 @@ class xmap_com_content
                 // Add images to the article
                 $text = @$item->introtext . @$item->fulltext;
                 if ($params['add_images']) {
-                    $node->images = XmapHelperAdmin::getImages($text, $params['max_images']);
+                    $node->images = XmapHelper::getImages($text, $params['max_images']);
                 }
 
                 if ($params['add_pagebreaks']) {
-                    $subnodes = XmapHelperAdmin::getPagebreaks($text, $node->link);
+                    $subnodes = XmapHelper::getPagebreaks($text, $node->link);
                     $node->expandible = (count($subnodes) > 0); // This article has children
                 }
 
