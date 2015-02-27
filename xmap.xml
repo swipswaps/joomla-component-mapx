@@ -12,13 +12,11 @@
     <install folder="admin">
         <sql>
             <file driver="mysql" charset="utf8">install/install.mysql.utf8.sql</file>
-            <file driver="postgresql" charset="utf8">install/install.postgresql.utf8.sql</file>
         </sql>
     </install>
     <uninstall>
         <sql>
             <file driver="mysql" charset="utf8">install/uninstall.mysql.utf8.sql</file>
-            <file driver="postgresql" charset="utf8">install/uninstall.postgresql.utf8.sql</file>
         </sql>
     </uninstall>
     <scriptfile>script.installer.php</scriptfile>

@@ -93,18 +93,18 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                             <?php echo JHtml::_('grid.sort', 'JSTATUS', 'a.published', $listDirn, $listOrder); ?>
                         </th>
                         <th class="title">
-                            <?php echo JHtml::_('grid.sort', 'Xmap_Heading_Sitemap', 'a.title', $listDirn, $listOrder); ?>
+                            <?php echo JHtml::_('grid.sort', 'COM_XMAP_HEADING_SITEMAP', 'a.title', $listDirn, $listOrder); ?>
                         </th>
                         <th width="5%" class="nowrap hidden-phone">
                             <?php echo JHtml::_('grid.sort', 'JGRID_HEADING_ACCESS', 'a.access', $listDirn, $listOrder); ?>
                         </th>
                         <th width="10%" class="nowrap hidden-phone">
-                            <?php echo JText::_('Xmap_Heading_Html_Stats'); ?><br />
-                            (<?php echo JText::_('Xmap_Heading_Num_Links') . ' / ' . JText::_('Xmap_Heading_Num_Hits') . ' / ' . JText::_('Xmap_Heading_Last_Visit'); ?>)
+                            <?php echo JText::_('COM_XMAP_HEADING_HTML_STATS'); ?><br />
+                            (<?php echo JText::_('COM_XMAP_HEADING_NUM_LINKS') . ' / ' . JText::_('COM_XMAP_HEADING_NUM_HITS') . ' / ' . JText::_('COM_XMAP_HEADING_LAST_VISIT'); ?>)
                         </th>
                         <th width="10%" class="nowrap hidden-phone">
-                            <?php echo JText::_('Xmap_Heading_Xml_Stats'); ?><br />
-                            <?php echo JText::_('Xmap_Heading_Num_Links') . '/' . JText::_('Xmap_Heading_Num_Hits') . '/' . JText::_('Xmap_Heading_Last_Visit'); ?>
+                            <?php echo JText::_('COM_XMAP_HEADING_XML_STATS'); ?><br />
+                            <?php echo JText::_('COM_XMAP_HEADING_NUM_LINKS') . '/' . JText::_('COM_XMAP_HEADING_NUM_HITS') . '/' . JText::_('COM_XMAP_HEADING_LAST_VISIT'); ?>
                         </th>
                         <th width="1%" class="nowrap center hidden-phone">
                             <?php echo JHtml::_('grid.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>
@@ -120,30 +120,30 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
 
                         $now = JFactory::getDate()->toUnix();
                         if (!$item->lastvisit_html) {
-                            $htmlDate = JText::_('Date_Never');
+                            $htmlDate = JText::_('DATE_NEVER');
                         } elseif ($item->lastvisit_html > ($now - 3600)) { // Less than one hour
-                            $htmlDate = JText::sprintf('Date_Minutes_Ago', intval(($now - $item->lastvisit_html) / 60));
+                            $htmlDate = JText::sprintf('COM_XMAP_DATE_MINUTES_AGO', intval(($now - $item->lastvisit_html) / 60));
                         } elseif ($item->lastvisit_html > ($now - 86400)) { // Less than one day
                             $hours = intval(($now - $item->lastvisit_html) / 3600);
-                            $htmlDate = JText::sprintf('Date_Hours_Minutes_Ago', $hours, ($now - ($hours * 3600) - $item->lastvisit_html) / 60);
+                            $htmlDate = JText::sprintf('COM_XMAP_DATE_HOURS_MINUTES_AGO', $hours, ($now - ($hours * 3600) - $item->lastvisit_html) / 60);
                         } elseif ($item->lastvisit_html > ($now - 259200)) { // Less than three days
                             $days = intval(($now - $item->lastvisit_html) / 86400);
-                            $htmlDate = JText::sprintf('Date_Days_Hours_Ago', $days, intval(($now - ($days * 86400) - $item->lastvisit_html) / 3600));
+                            $htmlDate = JText::sprintf('COM_XMAP_DATE_DAYS_HOURS_AGO', $days, intval(($now - ($days * 86400) - $item->lastvisit_html) / 3600));
                         } else {
                             $date = new JDate($item->lastvisit_html);
                             $htmlDate = $date->format('Y-m-d H:i');
                         }
 
                         if (!$item->lastvisit_xml) {
-                            $xmlDate = JText::_('Date_Never');
+                            $xmlDate = JText::_('DATE_NEVER');
                         } elseif ($item->lastvisit_xml > ($now - 3600)) { // Less than one hour
-                            $xmlDate = JText::sprintf('Date_Minutes_Ago', intval(($now - $item->lastvisit_xml) / 60));
+                            $xmlDate = JText::sprintf('COM_XMAP_DATE_MINUTES_AGO', intval(($now - $item->lastvisit_xml) / 60));
                         } elseif ($item->lastvisit_xml > ($now - 86400)) { // Less than one day
                             $hours = intval(($now - $item->lastvisit_xml) / 3600);
-                            $xmlDate = JText::sprintf('Date_Hours_Minutes_Ago', $hours, ($now - ($hours * 3600) - $item->lastvisit_xml) / 60);
+                            $xmlDate = JText::sprintf('COM_XMAP_DATE_HOURS_MINUTES_AGO', $hours, ($now - ($hours * 3600) - $item->lastvisit_xml) / 60);
                         } elseif ($item->lastvisit_xml > ($now - 259200)) { // Less than three days
                             $days = intval(($now - $item->lastvisit_xml) / 86400);
-                            $xmlDate = JText::sprintf('Date_Days_Hours_Ago', $days, intval(($now - ($days * 86400) - $item->lastvisit_xml) / 3600));
+                            $xmlDate = JText::sprintf('COM_XMAP_DATE_DAYS_HOURS_AGO', $days, intval(($now - ($days * 86400) - $item->lastvisit_xml) / 3600));
                         } else {
                             $date = new JDate($item->lastvisit_xml);
                             $xmlDate = $date->format('Y-m-d H:i');
@@ -171,10 +171,10 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                                 <a href="<?php echo JRoute::_('index.php?option=com_xmap&task=sitemap.edit&id=' . $item->id);?>" title="<?php echo JText::_('JACTION_EDIT'); ?>">
                                     <?php echo $this->escape($item->title); ?>
                                 </a>
-                                <?php if ($item->state): ?>
-                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('XMAP_XML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('XMAP_XML_LINK'); ?></a>]</small>
-                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('XMAP_NEWS_LINK'); ?></a>]</small>
-                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;images=1&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('XMAP_IMAGES_LINK_TOOLTIP', true); ?>"><?php echo JText::_('XMAP_IMAGES_LINK'); ?></a>]</small>
+                                <?php if ($item->published): ?>
+                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_XML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_XML_LINK'); ?></a>]</small>
+                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_NEWS_LINK'); ?></a>]</small>
+                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;images=1&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_IMAGES_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_IMAGES_LINK'); ?></a>]</small>
                                 <?php endif; ?>
                                 <br />
                                 <small><?php echo JText::sprintf('JGLOBAL_LIST_ALIAS', $this->escape($item->alias));?></small>

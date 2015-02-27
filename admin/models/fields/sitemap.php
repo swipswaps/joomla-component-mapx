@@ -21,7 +21,7 @@ class JFormFieldSitemap extends JFormFieldList
             ->select('s.id AS value')
             ->select('s.title AS text')
             ->from('#__xmap_sitemap AS s')
-            ->where('s.state = 1');
+            ->where('s.published = ' . $db->quote(1));
         $db->setQuery($query);
 
         $options = $db->loadObjectList();

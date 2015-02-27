@@ -26,10 +26,10 @@ JHtml::_('sortablelist.sortable', 'menueList', 'adminForm', 'asc', false);
             <?php echo JText::_('JGLOBAL_TITLE'); ?>
         </th>
         <th class="nowrap hidden-phone">
-            <?php echo JText::_('XMAP_PRIORITY'); ?>
+            <?php echo JText::_('COM_XMAP_PRIORITY'); ?>
         </th>
         <th class="nowrap hidden-phone">
-            <?php echo JText::_('XMAP_CHANGE_FREQUENCY'); ?>
+            <?php echo JText::_('COM_XMAP_CHANGE_FREQUENCY'); ?>
         </th>
     </tr>
     </thead>

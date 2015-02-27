@@ -161,7 +161,7 @@ class XmapModelSitemap extends JModelItem
     public function getItems()
     {
         if ($item = $this->getItem()) {
-            return XmapHelperAdmin::getMenuItems($item->selections);
+            return XmapHelper::getMenuItems($item->selections);
         }
         return false;
     }
@@ -173,7 +173,7 @@ class XmapModelSitemap extends JModelItem
      */
     public function getExtensions()
     {
-        return XmapHelperAdmin::getExtensions();
+        return XmapHelper::getExtensions();
     }
 
     /**

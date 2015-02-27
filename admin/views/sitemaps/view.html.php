@@ -33,7 +33,7 @@ class XmapViewSitemaps extends JViewLegacy
         $this->pagination = $this->get('Pagination');
 
         if ($extensions = $this->get('UnpublishedPlugins')) {
-            $message = JText::sprintf('XMAP_MESSAGE_EXTENSIONS_DISABLED', implode(', ', $extensions));
+            $message = JText::sprintf('COM_XMAP_MESSAGE_EXTENSIONS_DISABLED', implode(', ', $extensions));
             JFactory::getApplication()->enqueueMessage($message, 'notice');
         }
 
@@ -51,7 +51,7 @@ class XmapViewSitemaps extends JViewLegacy
     {
         $state = $this->get('State');
 
-        JToolBarHelper::title(JText::_('XMAP_SITEMAPS_TITLE'), 'list');
+        JToolBarHelper::title(JText::_('COM_XMAP_SITEMAPS_TITLE'), 'list');
 
         $canDo = JHelperContent::getActions('com_xmap', 'sitemap');
 
