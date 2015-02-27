@@ -1,23 +1,14 @@
 <?php
 
 /**
- * @version     $Id$
- * @copyright   Copyright (C) 2005 - 2009 Joomla! Vargas. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE.txt
- * @author      Guillermo Vargas (guille@vargas.co.cr)
+ * @author     Guillermo Vargas <guille@vargas.co.cr>
+ * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link       http://www.z-index.net
+ * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-// No direct access
+
 defined('_JEXEC') or die;
 
-jimport('joomla.application.component.controller');
-
-/**
- * Xmap Ajax Controller
- *
- * @package      Xmap
- * @subpackage   com_xmap
- * @since        2.0
- */
 class XmapControllerAjax extends JControllerLegacy
 {
 
@@ -32,7 +23,7 @@ class XmapControllerAjax extends JControllerLegacy
         $result = new JRegistry('_default');
         $sitemapId = JREquest::getInt('id');
 
-        if (!$user->authorise('core.edit', 'com_xmap.sitemap.'.$sitemapId)) {
+        if (!$user->authorise('core.edit', 'com_xmap.sitemap.' . $sitemapId)) {
             $result->setValue('result', 'KO');
             $result->setValue('message', 'You are not authorized to perform this action!');
         } else {

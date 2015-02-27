@@ -1,38 +1,29 @@
 <?php
+
 /**
- * @version        $Id$
- * @copyright   Copyright (C) 2005 - 2009 Joomla! Vargas. All rights reserved.
- * @license        GNU General Public License version 2 or later; see LICENSE.txt
- * @author        Guillermo Vargas (guille@vargas.co.cr)
+ * @author     Guillermo Vargas <guille@vargas.co.cr>
+ * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link       http://www.z-index.net
+ * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-defined( '_JEXEC' ) or die( 'Restricted access' );
-/**
- * Content Component Route Helper
- *
- * @package        Xmap
- * @subpackage    com_xmap
- * @since 2.0
- */
+
+defined('_JEXEC') or die;
+
+// TODO should be instanceof JComponentRouterBase
 class XmapRoute
 {
 
-    /**
-     * @param    int $id            The id of the article.
-     * @param    int    $categoryId    An optional category id.
-     *
-     * @return    string    The routed link.
-     */
     public static function sitemap($id, $view = 'html')
     {
         $needles = array(
-            'html' => (int) $id
+            'html' => (int)$id
         );
 
         //Create the link
-        $link = 'index.php?option=com_xmap&view='.$view.'&id='. $id;
+        $link = 'index.php?option=com_xmap&view=' . $view . '&id=' . $id;
 
         if ($itemId = self::_findItemId($needles)) {
-            $link .= '&Itemid='.$itemId;
+            $link .= '&Itemid=' . $itemId;
         };
 
         return $link;
@@ -42,18 +33,15 @@ class XmapRoute
     protected static function _findItemId($needles)
     {
         // Prepare the reverse lookup array.
-        if (self::$lookup === null)
-        {
+        if (self::$lookup === null) {
             self::$lookup = array();
 
-            $component    = &JComponentHelper::getComponent('com_xmap');
-            $menus        = &JApplication::getMenu('site', array());
-            $items        = $menus->getItems('component_id', $component->id);
+            $component = &JComponentHelper::getComponent('com_xmap');
+            $menus = &JApplication::getMenu('site', array());
+            $items = $menus->getItems('component_id', $component->id);
 
-            foreach ($items as &$item)
-            {
-                if (isset($item->query) && isset($item->query['view']))
-                {
+            foreach ($items as &$item) {
+                if (isset($item->query) && isset($item->query['view'])) {
                     $view = $item->query['view'];
                     if (!isset(self::$lookup[$view])) {
                         self::$lookup[$view] = array();
@@ -67,10 +55,8 @@ class XmapRoute
 
         $match = null;
 
-        foreach ($needles as $view => $id)
-        {
-            if (isset(self::$lookup[$view]))
-            {
+        foreach ($needles as $view => $id) {
+            if (isset(self::$lookup[$view])) {
                 if (isset(self::$lookup[$view][$id])) {
                     return self::$lookup[$view][$id];
                 }
@@ -98,54 +84,44 @@ function XmapBuildRoute(&$query)
 
     if (empty($query['Itemid'])) {
         $menuItem = $menu->getActive();
-    }
-    else {
+    } else {
         $menuItem = $menu->getItem($query['Itemid']);
     }
-    $mView    = (empty($menuItem->query['view'])) ? null : $menuItem->query['view'];
-    $mId      = (empty($menuItem->query['id'])) ? null : $menuItem->query['id'];
+    $mView = (empty($menuItem->query['view'])) ? null : $menuItem->query['view'];
+    $mId = (empty($menuItem->query['id'])) ? null : $menuItem->query['id'];
 
-    if ( !empty($query['Itemid']) ) {
+    if (!empty($query['Itemid'])) {
         unset($query['view']);
         unset($query['id']);
     } else {
-        if ( !empty($query['view']) ) {
-             $segments[] = $query['view'];
+        if (!empty($query['view'])) {
+            $segments[] = $query['view'];
         }
     }
 
 
-    if (isset($query['id']))
-    {
+    if (isset($query['id'])) {
         if (empty($query['Itemid'])) {
             $segments[] = $query['id'];
-        }
-        else
-        {
-            if (isset($menuItem->query['id']))
-            {
+        } else {
+            if (isset($menuItem->query['id'])) {
                 if ($query['id'] != $mId) {
                     $segments[] = $query['id'];
                 }
-            }
-            else {
+            } else {
                 $segments[] = $query['id'];
             }
         }
         unset($query['id']);
     };
 
-    if (isset($query['layout']))
-    {
-        if (!empty($query['Itemid']) && isset($menuItem->query['layout']))
-        {
+    if (isset($query['layout'])) {
+        if (!empty($query['Itemid']) && isset($menuItem->query['layout'])) {
             if ($query['layout'] == $menuItem->query['layout']) {
 
                 unset($query['layout']);
             }
-        }
-        else
-        {
+        } else {
             if ($query['layout'] == 'default') {
                 unset($query['layout']);
             }
@@ -167,7 +143,7 @@ function XmapParseRoute($segments)
     $vars = array();
 
     //G et the active menu item.
-    $app  = JFactory::getApplication();
+    $app = JFactory::getApplication();
     $menu = $app->getMenu();
     $item = $menu->getActive();
 
@@ -175,15 +151,14 @@ function XmapParseRoute($segments)
     $count = count($segments);
 
     // Standard routing for articles.
-    if (!isset($item))
-    {
+    if (!isset($item)) {
         $vars['view'] = $segments[0];
-        $vars['id']   = $segments[$count - 1];
+        $vars['id'] = $segments[$count - 1];
         return $vars;
     }
 
     $vars['view'] = $item->query['view'];
-    $vars['id']   = $item->query['id'];
+    $vars['id'] = $item->query['id'];
 
     return $vars;
 }

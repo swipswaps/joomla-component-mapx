@@ -1,12 +1,12 @@
 <?php
 
 /**
- * @version       $Id$
- * @copyright     Copyright (C) 2005 - 2009 Joomla! Vargas. All rights reserved.
- * @license       GNU General Public License version 2 or later; see LICENSE.txt
- * @author        Guillermo Vargas (guille@vargas.co.cr)
+ * @author     Guillermo Vargas <guille@vargas.co.cr>
+ * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link       http://www.z-index.net
+ * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-// No direct access
+
 defined('_JEXEC') or die;
 
 jimport('joomla.application.component.modelitem');
@@ -32,6 +32,7 @@ class XmapModelSitemap extends JModelItem
     protected $_extensions = null;
 
     static $items = array();
+
     /**
      * Method to auto-populate the model state.
      *
@@ -78,7 +79,7 @@ class XmapModelSitemap extends JModelItem
     {
         // Initialize variables.
         $db = $this->getDbo();
-        $pk = (!empty($pk)) ? $pk : (int) $this->getState('sitemap.id');
+        $pk = (!empty($pk)) ? $pk : (int)$this->getState('sitemap.id');
 
         if ($this->_item === null) {
             $this->_item = array();
@@ -91,12 +92,12 @@ class XmapModelSitemap extends JModelItem
                 $query->select($this->getState('item.select', 'a.*'));
                 $query->from('#__xmap_sitemap AS a');
 
-                $query->where('a.id = ' . (int) $pk);
+                $query->where('a.id = ' . (int)$pk);
 
                 // Filter by published state.
                 $published = $this->getState('filter.published');
                 if (is_numeric($published)) {
-                    $query->where('a.state = ' . (int) $published);
+                    $query->where('a.published = ' . (int)$published);
                 }
 
                 // Filter by access level.
@@ -160,14 +161,19 @@ class XmapModelSitemap extends JModelItem
     public function getItems()
     {
         if ($item = $this->getItem()) {
-            return XmapHelper::getMenuItems($item->selections);
+            return XmapHelperAdmin::getMenuItems($item->selections);
         }
         return false;
     }
 
-    function getExtensions()
+    /**
+     * @todo refactor
+     *
+     * @return array
+     */
+    public function getExtensions()
     {
-        return XmapHelper::getExtensions();
+        return XmapHelperAdmin::getExtensions();
     }
 
     /**
@@ -180,7 +186,7 @@ class XmapModelSitemap extends JModelItem
     public function hit($count)
     {
         // Initialize variables.
-        $pk = (int) $this->getState('sitemap.id');
+        $pk = (int)$this->getState('sitemap.id');
 
         $view = JRequest::getCmd('view', 'html');
         if ($view != 'xml' && $view != 'html') {
@@ -190,7 +196,7 @@ class XmapModelSitemap extends JModelItem
         $this->_db->setQuery(
             'UPDATE #__xmap_sitemap' .
             ' SET views_' . $view . ' = views_' . $view . ' + 1, count_' . $view . ' = ' . $count . ', lastvisit_' . $view . ' = ' . JFactory::getDate()->toUnix() .
-            ' WHERE id = ' . (int) $pk
+            ' WHERE id = ' . (int)$pk
         );
 
         if (!$this->_db->query()) {
@@ -201,13 +207,13 @@ class XmapModelSitemap extends JModelItem
         return true;
     }
 
-    public function getSitemapItems($view=null)
+    public function getSitemapItems($view = null)
     {
         if (!isset($view)) {
             $view = JRequest::getCmd('view');
         }
         $db = JFactory::getDBO();
-        $pk = (int) $this->getState('sitemap.id');
+        $pk = (int)$this->getState('sitemap.id');
 
         if (self::$items !== NULL && isset(self::$items[$view])) {
             return;
@@ -234,7 +240,7 @@ class XmapModelSitemap extends JModelItem
     {
         $items = $this->getSitemapItems($view);
         $db = JFactory::getDBO();
-        $pk = (int) $this->getState('sitemap.id');
+        $pk = (int)$this->getState('sitemap.id');
 
         $isNew = false;
         if (empty($items[$view][$itemid][$uid])) {
@@ -270,7 +276,7 @@ class XmapModelSitemap extends JModelItem
 
         $excludedItems = $displayer->getExcludedItems();
         if (isset($excludedItems[$itemid])) {
-            $excludedItems[$itemid] = (array) $excludedItems[$itemid];
+            $excludedItems[$itemid] = (array)$excludedItems[$itemid];
         }
         if (!$displayer->isExcluded($itemid, $uid)) {
             $excludedItems[$itemid][] = $uid;

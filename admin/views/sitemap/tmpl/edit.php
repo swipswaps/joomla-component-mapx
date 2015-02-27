@@ -1,121 +1,74 @@
 <?php
+
 /**
- * @version          $Id$
- * @copyright        Copyright (C) 2007 - 2009 Joomla! Vargas. All rights reserved.
- * @license          GNU General Public License version 2 or later; see LICENSE.txt
- * @author           Guillermo Vargas (guille@vargas.co.cr)
+ * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link       http://www.z-index.net
+ * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * @var        XmapViewSitemap $this
  */
+
 defined('_JEXEC') or die;
 
-// Include the component HTML helpers.
-JHtml::addIncludePath(JPATH_COMPONENT . '/helpers/html');
-
-// Load the tooltip behavior.
-JHtml::_('behavior.tooltip');
 JHtml::_('behavior.formvalidation');
-if(version_compare(JVERSION,'3.0.0','ge')) {
-    JHtml::_('formbehavior.chosen', 'select');
-}
+JHtml::_('behavior.keepalive');
+JHtml::_('formbehavior.chosen', 'select');
 ?>
 <script type="text/javascript">
-<!--
-    function submitbutton(task)
-    {
-        if (task == 'sitemap.cancel' || document.formvalidator.isValid($('adminForm'))) {
-            submitform(task);
+    Joomla.submitbutton = function (task) {
+        if (task == 'sitemap.cancel' || document.formvalidator.isValid(document.id('sitemap-form'))) {
+            <?php echo $this->form->getField('introtext')->save(); ?>
+            Joomla.submitform(task, document.getElementById('sitemap-form'));
         }
     }
-// -->
 </script>
-<form action="<?php echo JRoute::_('index.php?option=com_xmap&layout=edit&id='.$this->item->id); ?>" method="post" name="adminForm" id="adminForm" class="form-validate">
-    <div class="row-fluid">
-        <!-- Begin Content -->
-        <div class="span10 form-horizontal">
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="#general" data-toggle="tab"><?php echo JText::_('XMAP_SITEMAP_DETAILS_FIELDSET');?></a></li>
-                <li><a href="#attrib-menus" data-toggle="tab"><?php echo JText::_('XMAP_FIELDSET_MENUS');?></a></li>
-                <?php
-                $fieldSets = $this->form->getFieldsets('attribs');
-                foreach ($fieldSets as $name => $fieldSet) :
-                ?>
-                <li><a href="#attrib-<?php echo $name;?>" data-toggle="tab"><?php echo JText::_($fieldSet->label);?></a></li>
-                <?php
-                endforeach;
-                ?>
-            </ul>
+<form action="<?php echo JRoute::_('index.php?option=com_xmap&layout=edit&id=' . $this->item->id); ?>" method="post" name="adminForm" id="sitemap-form" class="form-validate">
 
-            <div class="tab-content">
-                <div class="tab-pane active" id="general">
-                    <div class="row-fluid">
-                        <div class="span10">
-                            <div class="control-group">
-                                <?php echo $this->form->getLabel('title'); ?>
-                                <div class="controls">
-                                    <?php echo $this->form->getInput('title'); ?>
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <?php echo $this->form->getLabel('alias'); ?>
-                                <div class="controls">
-                                    <?php echo $this->form->getInput('alias'); ?>
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <?php echo $this->form->getLabel('state'); ?>
-                                <div class="controls">
-                                    <?php echo $this->form->getInput('state'); ?>
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <?php echo $this->form->getLabel('access'); ?>
-                                <div class="controls">
-                                    <?php echo $this->form->getInput('access'); ?>
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <div class="clr"></div>
-                                <?php echo $this->form->getLabel('introtext'); ?><br />
-                                <div class="clr"></div>
-                                <div class="controls">
-                                    <?php echo $this->form->getInput('introtext'); ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <?php echo JLayoutHelper::render('joomla.edit.title_alias', $this); ?>
 
-                <div class="tab-pane" id="attrib-menus">
-                    <div style="width:500px">
-                        <?php echo $this->form->getInput('selections'); ?>
-                    </div>
-                </div>
-                <?php
-                $fieldSets = $this->form->getFieldsets('attribs');
-                foreach ($fieldSets as $name => $fieldSet) :
-                ?>
-                <div class="tab-pane" id="attrib-<?php echo $name;?>">
-                    <?php
-                    if (isset($fieldSet->description) && trim($fieldSet->description)) :
-                        echo '<p class="tip">' . $this->escape(JText::_($fieldSet->description)) . '</p>';
-                    endif;
+    <div class="form-horizontal">
+        <?php echo JHtml::_('bootstrap.startTabSet', 'myTab', array('active' => 'menues')); ?>
 
-                    foreach ($this->form->getFieldset($name) as $field) :
-                    ?>
-                    <div class="control-group">
-                        <?php echo $field->label; ?>
-                        <div class="controls">
-                            <?php echo $field->input; ?>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                <?php endforeach; ?>
+        <?php echo JHtml::_('bootstrap.addTab', 'myTab', 'details', JText::_('JGLOBAL_INTRO_TEXT', true)); ?>
+        <div class="row-fluid">
+            <div class="span9">
+                <fieldset class="adminform">
+                    <?php echo $this->form->getInput('introtext'); ?>
+                </fieldset>
+            </div>
+            <div class="span3">
+                <?php echo JLayoutHelper::render('joomla.edit.global', $this); ?>
             </div>
         </div>
-    </div>
+        <?php echo JHtml::_('bootstrap.endTab'); ?>
 
-    <input type="hidden" name="task" value="" />
-    <?php echo $this->form->getInput('is_default'); ?>
-    <?php echo JHtml::_('form.token'); ?>
+        <?php echo JHtml::_('bootstrap.addTab', 'myTab', 'menues', JText::_('JOPTION_MENUS', true)); ?>
+        <div class="row-fluid">
+            <div class="span12">
+                <?php echo $this->loadTemplate('menues'); ?>
+            </div>
+        </div>
+        <?php echo JHtml::_('bootstrap.endTab'); ?>
+
+        <?php echo JLayoutHelper::render('joomla.edit.params', $this); ?>
+
+        <?php echo JHtml::_('bootstrap.addTab', 'myTab', 'publishing', JText::_('JGLOBAL_FIELDSET_PUBLISHING', true)); ?>
+        <div class="row-fluid form-horizontal-desktop">
+            <div class="span6">
+                <?php echo JLayoutHelper::render('joomla.edit.publishingdata', $this); ?>
+            </div>
+        </div>
+        <?php echo JHtml::_('bootstrap.endTab'); ?>
+
+        <?php if ($this->canDo->get('core.admin')) : ?>
+            <?php echo JHtml::_('bootstrap.addTab', 'myTab', 'permissions', JText::_('JGLOBAL_ACTION_PERMISSIONS_LABEL', true)); ?>
+            <?php echo $this->form->getInput('rules'); ?>
+            <?php echo JHtml::_('bootstrap.endTab'); ?>
+        <?php endif; ?>
+
+        <?php echo JHtml::_('bootstrap.endTabSet'); ?>
+
+        <input type="hidden" name="task" value="" />
+        <?php echo JHtml::_('form.token'); ?>
+    </div>
 </form>
-<div class="clr"></div>

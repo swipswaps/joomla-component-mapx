@@ -1,53 +1,23 @@
 <?php
+
 /**
- * @version     $Id$
- * @copyright   Copyright (C) 2007 - 2009 Joomla! Vargas. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE.txt
- * @author      Guillermo Vargas (guille@vargas.co.cr)
+ * @author     Guillermo Vargas <guille@vargas.co.cr>
+ * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link       http://www.z-index.net
+ * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
 
-
-// No direct access
 defined('_JEXEC') or die;
 
-/**
- * Xmap component helper.
- *
- * @package     Xmap
- * @subpackage  com_xmap
- * @since       2.0
- */
-class XmapHelper
+abstract class XmapHelper
 {
-    /**
-     * Configure the Linkbar.
-     *
-     * @param    string  The name of the active view.
-     */
-    public static function addSubmenu($vName)
+    public static function getStateOptions()
     {
-        $version = new JVersion;
-
-        if (version_compare($version->getShortVersion(), '3.0.0', '<')) {
-            JSubMenuHelper::addEntry(
-                JText::_('Xmap_Submenu_Sitemaps'),
-                'index.php?option=com_xmap',
-                $vName == 'sitemaps'
-            );
-            JSubMenuHelper::addEntry(
-                JText::_('Xmap_Submenu_Extensions'),
-                'index.php?option=com_plugins&view=plugins&filter_folder=xmap',
-                $vName == 'extensions');
-        } else {
-            JHtmlSidebar::addEntry(
-                JText::_('Xmap_Submenu_Sitemaps'),
-                'index.php?option=com_xmap',
-                $vName == 'sitemaps'
-            );
-            JHtmlSidebar::addEntry(
-                JText::_('Xmap_Submenu_Extensions'),
-                'index.php?option=com_plugins&view=plugins&filter_folder=xmap',
-                $vName == 'extensions');
-        }
+        return array(
+            JHtml::_('select.option', '1', JText::_('JPUBLISHED')),
+            JHtml::_('select.option', '0', JText::_('JUNPUBLISHED')),
+            JHtml::_('select.option', '-2', JText::_('JTRASHED')),
+            JHtml::_('select.option', '*', JText::_('JALL'))
+        );
     }
 }

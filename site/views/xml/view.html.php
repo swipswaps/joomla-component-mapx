@@ -1,34 +1,19 @@
 <?php
 
 /**
- * @version             $Id$
- * @copyright           Copyright (C) 2005 - 2009 Joomla! Vargas. All rights reserved.
- * @license             GNU General Public License version 2 or later; see LICENSE.txt
- * @author              Guillermo Vargas (guille@vargas.co.cr)
+ * @author     Guillermo Vargas <guille@vargas.co.cr>
+ * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link       http://www.z-index.net
+ * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-// No direct access
-defined( '_JEXEC' ) or die( 'Restricted access' );
 
-jimport('joomla.application.component.view');
+defined('_JEXEC') or die;
 
-# For compatibility with older versions of Joola 2.5
-if (!class_exists('JViewLegacy')){
-    class JViewLegacy extends JView {
-
-    }
-}
-
-/**
- * XML Sitemap View class for the Xmap component
- *
- * @package      Xmap
- * @subpackage   com_xmap
- * @since        2.0
- */
 class XmapViewXml extends JViewLegacy
 {
 
     protected $state;
+
     protected $print;
 
     protected $_obLevel;
@@ -38,20 +23,9 @@ class XmapViewXml extends JViewLegacy
         // Initialise variables.
         $app = JFactory::getApplication();
         $this->user = JFactory::getUser();
-        $isNewsSitemap = JRequest::getInt('news',0);
-        $this->isImages = JRequest::getInt('images',0);
+        $isNewsSitemap = JRequest::getInt('news', 0);
+        $this->isImages = JRequest::getInt('images', 0);
 
-        $model = $this->getModel('Sitemap');
-        $this->setModel($model);
-
-        // force to not display errors on XML sitemap
-        @ini_set('display_errors', 0);
-        # Increase memory and max execution time for XML sitemaps to make it work
-        # with very large sites
-        @ini_set('memory_limit','512M');
-        @ini_set('max_execution_time',300);
-
-        $layout = $this->getLayout();
 
         $this->item = $this->get('Item');
         $this->state = $this->get('State');
@@ -60,9 +34,6 @@ class XmapViewXml extends JViewLegacy
         // For now, news sitemaps are not editable
         $this->canEdit = $this->canEdit && !$isNewsSitemap;
 
-        if ($layout == 'xsl') {
-            return $this->displayXSL($layout);
-        }
 
         // Get model data.
         $this->items = $this->get('Items');
@@ -80,9 +51,9 @@ class XmapViewXml extends JViewLegacy
 
         $this->item->rlink = JRoute::_('index.php?option=com_xmap&view=xml&id=' . $this->item->slug);
 
+
         // Create a shortcut to the paramemters.
         $params = &$this->state->params;
-        $offset = $this->state->get('page.offset');
 
         if (!$this->item->params->get('access-view')) {
             if ($this->user->get('guest')) {
@@ -104,9 +75,7 @@ class XmapViewXml extends JViewLegacy
             $this->setLayout($layout);
         }
 
-        // Load the class used to display the sitemap
-        $this->loadTemplate('class');
-        $this->displayer = new XmapXmlDisplayer($params, $this->item);
+        $this->displayer = new XmapDisplayerXml($params, $this->item);
 
         $this->displayer->setJView($this);
 
@@ -114,51 +83,8 @@ class XmapViewXml extends JViewLegacy
         $this->displayer->isImages = $this->isImages;
         $this->displayer->canEdit = $this->canEdit;
 
-        $doCompression = ($this->item->params->get('compress_xml') && !ini_get('zlib.output_compression') && ini_get('output_handler') != 'ob_gzhandler');
-        $this->endAllBuffering();
-        if ($doCompression) {
-            ob_start();
-        }
+        $this->getModel()->hit($this->displayer->getCount());
 
         parent::display($tpl);
-
-        $model = $this->getModel();
-        $model->hit($this->displayer->getCount());
-
-        if ($doCompression) {
-            $data = ob_get_contents();
-            JResponse::setBody($data);
-            @ob_end_clean();
-            echo JResponse::toString(true);
-        }
-        $this->recreateBuffering();
-        exit;
     }
-
-    function displayXSL()
-    {
-        $this->setLayout('default');
-
-        $this->endAllBuffering();
-        parent::display('xsl');
-        $this->recreateBuffering();
-        exit;
-    }
-
-    private function endAllBuffering()
-    {
-        $this->_obLevel = ob_get_level();
-        $level = FALSE;
-        while (ob_get_level() > 0 && $level !== ob_get_level()) {
-            @ob_end_clean();
-            $level = ob_get_level();
-        }
-    }
-    private function recreateBuffering()
-    {
-        while($this->_obLevel--) {
-            ob_start();
-        }
-    }
-
 }
