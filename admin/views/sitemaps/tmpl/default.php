@@ -98,13 +98,13 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                         <th width="5%" class="nowrap hidden-phone">
                             <?php echo JHtml::_('grid.sort', 'JGRID_HEADING_ACCESS', 'a.access', $listDirn, $listOrder); ?>
                         </th>
-                        <th width="10%" class="nowrap hidden-phone">
+                        <th width="10%" class="nowrap center hidden-phone">
                             <?php echo JText::_('COM_XMAP_HEADING_HTML_STATS'); ?><br />
                             (<?php echo JText::_('COM_XMAP_HEADING_NUM_LINKS') . ' / ' . JText::_('COM_XMAP_HEADING_NUM_HITS') . ' / ' . JText::_('COM_XMAP_HEADING_LAST_VISIT'); ?>)
                         </th>
-                        <th width="10%" class="nowrap hidden-phone">
+                        <th width="10%" class="nowrap center hidden-phone">
                             <?php echo JText::_('COM_XMAP_HEADING_XML_STATS'); ?><br />
-                            <?php echo JText::_('COM_XMAP_HEADING_NUM_LINKS') . '/' . JText::_('COM_XMAP_HEADING_NUM_HITS') . '/' . JText::_('COM_XMAP_HEADING_LAST_VISIT'); ?>
+                            (<?php echo JText::_('COM_XMAP_HEADING_NUM_LINKS') . ' / ' . JText::_('COM_XMAP_HEADING_NUM_HITS') . ' / ' . JText::_('COM_XMAP_HEADING_LAST_VISIT'); ?>)
                         </th>
                         <th width="1%" class="nowrap center hidden-phone">
                             <?php echo JHtml::_('grid.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>
@@ -113,42 +113,9 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                     </thead>
                     <tbody>
                     <?php foreach ($this->items as $i => $item) :
-
-                        $canCreate = $user->authorise('core.create', 'com_content.category.' . $item->catid);
+                        $canEdit = $user->authorise('core.edit', 'com_xmap.sitemap.' . $item->id);
                         $canChange = $user->authorise('core.edit.state', 'com_xmap.component');
-                        $canEditOwn = $user->authorise('core.edit.own', 'com_content.article.' . $item->id) && $item->created_by == $userId;
-
-                        $now = JFactory::getDate()->toUnix();
-                        if (!$item->lastvisit_html) {
-                            $htmlDate = JText::_('DATE_NEVER');
-                        } elseif ($item->lastvisit_html > ($now - 3600)) { // Less than one hour
-                            $htmlDate = JText::sprintf('COM_XMAP_DATE_MINUTES_AGO', intval(($now - $item->lastvisit_html) / 60));
-                        } elseif ($item->lastvisit_html > ($now - 86400)) { // Less than one day
-                            $hours = intval(($now - $item->lastvisit_html) / 3600);
-                            $htmlDate = JText::sprintf('COM_XMAP_DATE_HOURS_MINUTES_AGO', $hours, ($now - ($hours * 3600) - $item->lastvisit_html) / 60);
-                        } elseif ($item->lastvisit_html > ($now - 259200)) { // Less than three days
-                            $days = intval(($now - $item->lastvisit_html) / 86400);
-                            $htmlDate = JText::sprintf('COM_XMAP_DATE_DAYS_HOURS_AGO', $days, intval(($now - ($days * 86400) - $item->lastvisit_html) / 3600));
-                        } else {
-                            $date = new JDate($item->lastvisit_html);
-                            $htmlDate = $date->format('Y-m-d H:i');
-                        }
-
-                        if (!$item->lastvisit_xml) {
-                            $xmlDate = JText::_('DATE_NEVER');
-                        } elseif ($item->lastvisit_xml > ($now - 3600)) { // Less than one hour
-                            $xmlDate = JText::sprintf('COM_XMAP_DATE_MINUTES_AGO', intval(($now - $item->lastvisit_xml) / 60));
-                        } elseif ($item->lastvisit_xml > ($now - 86400)) { // Less than one day
-                            $hours = intval(($now - $item->lastvisit_xml) / 3600);
-                            $xmlDate = JText::sprintf('COM_XMAP_DATE_HOURS_MINUTES_AGO', $hours, ($now - ($hours * 3600) - $item->lastvisit_xml) / 60);
-                        } elseif ($item->lastvisit_xml > ($now - 259200)) { // Less than three days
-                            $days = intval(($now - $item->lastvisit_xml) / 86400);
-                            $xmlDate = JText::sprintf('COM_XMAP_DATE_DAYS_HOURS_AGO', $days, intval(($now - ($days * 86400) - $item->lastvisit_xml) / 3600));
-                        } else {
-                            $date = new JDate($item->lastvisit_xml);
-                            $xmlDate = $date->format('Y-m-d H:i');
-                        }
-
+                        $canEditOwn = $user->authorise('core.edit.own', 'com_xmap.sitemap.' . $item->id) && $item->created_by == $userId;
                         ?>
                         <tr class="row<?php echo $i % 2; ?>">
                             <td class="center hidden-phone">
@@ -168,9 +135,14 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                                 </div>
                             </td>
                             <td class="title">
-                                <a href="<?php echo JRoute::_('index.php?option=com_xmap&task=sitemap.edit&id=' . $item->id);?>" title="<?php echo JText::_('JACTION_EDIT'); ?>">
-                                    <?php echo $this->escape($item->title); ?>
-                                </a>
+                                <?php if ($canEdit || $canEditOwn) : ?>
+                                    <a href="<?php echo JRoute::_('index.php?option=com_xmap&task=sitemap.edit&id=' . $item->id); ?>" title="<?php echo JText::_('JACTION_EDIT'); ?>">
+                                        <?php echo $this->escape($item->title); ?>
+                                    </a>
+                                <?php else : ?>
+                                    <span title="<?php echo JText::sprintf('JFIELD_ALIAS_LABEL', $this->escape($item->alias)); ?>"><?php echo $this->escape($item->title); ?></span>
+                                <?php endif; ?>
+
                                 <?php if ($item->published): ?>
                                     <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_XML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_XML_LINK'); ?></a>]</small>
                                     <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_NEWS_LINK'); ?></a>]</small>
@@ -183,10 +155,12 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                                 <?php echo $this->escape($item->access_level); ?>
                             </td>
                             <td class="center hidden-phone">
-                                <?php echo $item->count_html . ' / ' . $item->views_html . ' / ' . $htmlDate; ?>
+                                <?php echo $item->count_html . ' / ' . $item->views_html; ?>
+                                <div class="small"><?php echo XmapHelper::getLastVisitDate($item->lastvisit_html); ?></div>
                             </td>
                             <td class="center hidden-phone">
-                                <?php echo $item->count_xml . ' / ' . $item->views_xml . ' / ' . $xmlDate; ?>
+                                <?php echo $item->count_xml . ' / ' . $item->views_xml; ?>
+                                <div class="small"><?php echo XmapHelper::getLastVisitDate($item->lastvisit_xml); ?></div>
                             </td>
                             <td class="center hidden-phone">
                                 <?php echo (int)$item->id; ?>

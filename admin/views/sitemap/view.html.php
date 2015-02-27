@@ -27,11 +27,6 @@ class XmapViewSitemap extends JViewLegacy
     protected $state;
 
     /**
-     * @var array
-     */
-    protected $menues;
-
-    /**
      * @var JObject
      */
     protected $canDo;
@@ -41,7 +36,6 @@ class XmapViewSitemap extends JViewLegacy
         $this->item = $this->get('Item');
         $this->form = $this->get('Form');
         $this->state = $this->get('State');
-        $this->menues = $this->get('Menues');
         $this->canDo = JHelperContent::getActions('com_xmap', 'sitemap');
 
         // Check for errors.
@@ -67,10 +61,13 @@ class XmapViewSitemap extends JViewLegacy
             JToolBarHelper::apply('sitemap.apply', 'JTOOLBAR_APPLY');
             JToolBarHelper::save('sitemap.save', 'JTOOLBAR_SAVE');
             JToolBarHelper::save2new('sitemap.save2new');
-            JToolBarHelper::save2copy('sitemap.save2copy');
         } else if ($this->canDo->get('core.edit') || $this->canDo->get('core.edit.own')) {
             JToolBarHelper::apply('sitemap.apply', 'JTOOLBAR_APPLY');
             JToolBarHelper::save('sitemap.save', 'JTOOLBAR_SAVE');
+        }
+
+        if ($this->canDo->get('core.create')) {
+            JToolBarHelper::save2copy('sitemap.save2copy');
         }
 
         JToolBarHelper::cancel('sitemap.cancel', 'JTOOLBAR_CLOSE');
@@ -78,34 +75,26 @@ class XmapViewSitemap extends JViewLegacy
 
     protected function handleMenues()
     {
-        foreach ($this->menues as $menu) {
-            $menu->selected = false;
-            $menu->ordering = -1;
-            $menu->changefreq = 0.5;
-            $menu->priority = 'weekly';
+        $menues = $this->get('Menues');
 
-            if (isset($this->item->selections[$menu->menutype])) {
-                $menu->selected = true;
-                $menu->ordering = $this->item->selections[$menu->menutype]['ordering'];
-                $menu->priority = $this->item->selections[$menu->menutype]['priority'];
-                $menu->changefreq = $this->item->selections[$menu->menutype]['changefreq'];
+        // remove non existing menutypes from selection
+        foreach ($this->item->selections as $menutype => $options) {
+            if (!isset($menues[$menutype])) {
+                unset($this->item->selections[$menutype]);
             }
-            unset($menu->description);
         }
 
-        usort($this->menues, array($this, 'sortMenues'));
-    }
-
-    protected function sortMenues($a, $b)
-    {
-        if ($a->ordering == $b->ordering) {
-            return 0;
+        foreach ($menues as $menu) {
+            if (isset($this->item->selections[$menu->menutype])) {
+                $this->item->selections[$menu->menutype]['selected'] = true;
+                $this->item->selections[$menu->menutype]['title'] = $menu->title;
+                $this->item->selections[$menu->menutype]['menutype'] = $menu->menutype;
+            } else {
+                $this->item->selections[$menu->menutype] = (array)$menu;
+                $this->item->selections[$menu->menutype]['selected'] = false;
+                $this->item->selections[$menu->menutype]['priority'] = 0.5;
+                $this->item->selections[$menu->menutype]['changefreq'] = 'weekly';
+            }
         }
-
-        if ($a->ordering == -1) {
-            return 1;
-        }
-
-        return ($a->ordering < $b->ordering) ? -1 : 1;
     }
 }

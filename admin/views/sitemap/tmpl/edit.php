@@ -29,6 +29,14 @@ JHtml::_('formbehavior.chosen', 'select');
     <div class="form-horizontal">
         <?php echo JHtml::_('bootstrap.startTabSet', 'myTab', array('active' => 'menues')); ?>
 
+        <?php echo JHtml::_('bootstrap.addTab', 'myTab', 'menues', JText::_('JOPTION_MENUS', true)); ?>
+        <div class="row-fluid">
+            <div class="span12">
+                <?php echo $this->loadTemplate('menues'); ?>
+            </div>
+        </div>
+        <?php echo JHtml::_('bootstrap.endTab'); ?>
+
         <?php echo JHtml::_('bootstrap.addTab', 'myTab', 'details', JText::_('JGLOBAL_INTRO_TEXT', true)); ?>
         <div class="row-fluid">
             <div class="span9">
@@ -38,14 +46,6 @@ JHtml::_('formbehavior.chosen', 'select');
             </div>
             <div class="span3">
                 <?php echo JLayoutHelper::render('joomla.edit.global', $this); ?>
-            </div>
-        </div>
-        <?php echo JHtml::_('bootstrap.endTab'); ?>
-
-        <?php echo JHtml::_('bootstrap.addTab', 'myTab', 'menues', JText::_('JOPTION_MENUS', true)); ?>
-        <div class="row-fluid">
-            <div class="span12">
-                <?php echo $this->loadTemplate('menues'); ?>
             </div>
         </div>
         <?php echo JHtml::_('bootstrap.endTab'); ?>

@@ -34,7 +34,7 @@ JHtml::_('sortablelist.sortable', 'menueList', 'adminForm', 'asc', false);
     </tr>
     </thead>
     <tbody>
-    <?php foreach ($this->menues as $i => $menu): ?>
+    <?php foreach ($this->item->selections as $i => $menu): ?>
         <tr>
             <td class="center hidden-phone">
                 <span class="sortable-handler">
@@ -42,16 +42,16 @@ JHtml::_('sortablelist.sortable', 'menueList', 'adminForm', 'asc', false);
                 </span>
             </td>
             <td width="1%" class="center">
-                <input type="checkbox" id="cb<?php echo $i; ?>" name="jform[selections][]" value="<?php echo $menu->menutype; ?>" <?php echo $menu->selected ? 'checked="checked"' : ''; ?> />
+                <input type="checkbox" id="cb<?php echo $i; ?>" name="jform[selections][<?php echo $menu['menutype']; ?>][enabled]" value="1" <?php echo $menu['selected'] ? 'checked="checked"' : ''; ?> />
             </td>
             <td class="nowrap has-context">
-                <label for="cb<?php echo $i; ?>"><?php echo $this->escape($menu->title); ?></label>
+                <label for="cb<?php echo $i; ?>"><?php echo $this->escape($menu['title']); ?></label>
             </td>
             <td class="nowrap hidden-phone">
-                <?php echo JHtml::_('xmap.priorities', 'jform[selections_priority][]', $menu->priority, $i); ?>
+                <?php echo JHtml::_('xmap.priorities', 'jform[selections][' . $menu['menutype'] . '][priority]', $menu['priority'], $i); ?>
             </td>
             <td class="nowrap hidden-phone">
-                <?php echo JHTML::_('xmap.changefrequency', 'jform[selections_changefreq][]', $menu->changefreq, $i); ?>
+                <?php echo JHTML::_('xmap.changefrequency', 'jform[selections][' . $menu['menutype'] . '][changefreq]', $menu['changefreq'], $i); ?>
             </td>
         </tr>
     <?php endforeach; ?>

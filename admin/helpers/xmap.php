@@ -20,4 +20,25 @@ abstract class XmapHelper
             JHtml::_('select.option', '*', JText::_('JALL'))
         );
     }
+
+    public static function getLastVisitDate($date)
+    {
+        $now = JFactory::getDate()->toUnix();
+
+        if (!$date) {
+            $retval = JText::_('COM_XMAP_DATE_NEVER');
+        } elseif ($date > ($now - 3600)) { // Less than one hour
+            $retval = JText::sprintf('COM_XMAP_DATE_MINUTES_AGO', intval(($now - $date) / 60));
+        } elseif ($date > ($now - 86400)) { // Less than one day
+            $hours = intval(($now - $date) / 3600);
+            $retval = JText::sprintf('COM_XMAP_DATE_HOURS_MINUTES_AGO', $hours, ($now - ($hours * 3600) - $date) / 60);
+        } elseif ($date > ($now - 259200)) { // Less than three days
+            $days = intval(($now - $date) / 86400);
+            $retval = JText::sprintf('COM_XMAP_DATE_DAYS_HOURS_AGO', $days, intval(($now - ($days * 86400) - $date) / 3600));
+        } else {
+            $retval = JFactory::getDate($date)->format('Y-m-d H:i');
+        }
+
+        return $retval;
+    }
 }

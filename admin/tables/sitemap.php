@@ -11,37 +11,31 @@ defined('_JEXEC') or die;
 
 class XmapTableSitemap extends JTable
 {
+    protected $_jsonEncode = array('params', 'selections');
+
     public function __construct($db)
     {
         parent::__construct('#__xmap_sitemap', 'id', $db);
     }
 
-    public function bind($array, $ignore = '')
+    public function bind($array, $ignore = array())
     {
-        if (isset($array['params']) && is_array($array['params'])) {
-            $registry = new Joomla\Registry\Registry();
-            $registry->loadArray($array['params']);
-            $array['params'] = $registry->toString();
-        }
-
         if (isset($array['selections']) && is_array($array['selections'])) {
-            $selections = array();
-            foreach ($array['selections'] as $i => $menu) {
-                $selections[$menu] = array(
-                    'priority' => $array['selections_priority'][$i],
-                    'changefreq' => $array['selections_changefreq'][$i],
-                    'ordering' => $i
-                );
+            foreach ($array['selections'] as $menutype => $options) {
+                if (isset($options['enabled'])) {
+                    unset($array['selections'][$menutype]['enabled']);
+                } else {
+                    unset($array['selections'][$menutype]);
+                }
             }
-
-            $registry = new Joomla\Registry\Registry();
-            $registry->loadArray($selections);
-            $array['selections'] = $registry->toString();
         }
 
         return parent::bind($array, $ignore);
     }
 
+    /**
+     * @todo alias duplication check
+     */
     public function check()
     {
         if (empty($this->alias)) {
@@ -70,6 +64,7 @@ class XmapTableSitemap extends JTable
             $this->created_by = $user->get('id');
         }
 
+        // for old xmap installations
         if (!$this->created_by) {
             $this->created_by = $user->get('id');
         }
