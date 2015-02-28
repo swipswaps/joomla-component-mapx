@@ -9,11 +9,9 @@
 
 defined('_JEXEC') or die;
 
-JLoader::register('XmapHelper', __DIR__ . '/helpers/xmap.php');
+JLoader::discover('XmapDisplayer', __DIR__ . '/displayer/');
 
-JLoader::register('XmapDisplayer', __DIR__ . '/displayer/displayer.php');
-JLoader::register('XmapDisplayerHtml', __DIR__ . '/displayer/html.php');
-JLoader::register('XmapDisplayerXml', __DIR__ . '/displayer/xml.php');
+JLoader::register('XmapHelper', __DIR__ . '/helpers/xmap.php');
 
 $controller = JControllerLegacy::getInstance('Xmap');
 $controller->execute(JFactory::getApplication()->input->get('task', 'display'));

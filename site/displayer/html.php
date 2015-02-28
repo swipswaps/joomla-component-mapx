@@ -9,68 +9,109 @@
 
 defined('_JEXEC') or die;
 
-class XmapDisplayerHtml extends XmapDisplayer
+use Joomla\Registry\Registry;
+
+class XmapDisplayerHtml extends XmapDisplayerAbstract
 {
+    /**
+     * @var string
+     */
+    public $view = 'html';
 
-    var $level = -1;
-    var $_openList = '';
-    var $_closeList = '';
-    var $_closeItem = '';
-    var $_childs;
-    var $_width;
-    var $live_site = 0;
+    /**
+     * @var int
+     */
+    protected $level = -1;
 
-    public function __construct($config, $sitemap)
+    /**
+     * @var string
+     */
+    protected $openList = '';
+
+    /**
+     * @var string
+     */
+    protected $closeItem = '';
+
+    /**
+     * @var array
+     */
+    protected $childs = array();
+
+    /**
+     * @var integer
+     */
+    protected $width = 0;
+
+    /**
+     * @var array
+     */
+    protected $parent_children = array();
+
+    /**
+     * @var array
+     */
+    protected $last_child = array();
+
+    /**
+     * @var bool
+     */
+    protected $canEdit = false;
+
+    public function __construct(stdClass $sitemap, array &$items, array &$extensions)
     {
-        $this->view = 'html';
-        parent::__construct($config, $sitemap);
-        $this->_parent_children = array();
-        $this->_last_child = array();
-        $this->live_site = substr_replace(JURI::root(), "", -1, 1);
-
-        $user = JFactory::getUser();
-    }
-
-    function setJView($view)
-    {
-        parent::setJView($view);
+        parent::__construct($sitemap, $items, $extensions);
 
         $columns = $this->sitemap->params->get('columns', 0);
         if ($columns > 1) { // calculate column widths
-            $total = count($view->items);
+            $total = count($this->items);
             $columns = $total < $columns ? $total : $columns;
-            $this->_width = (100 / $columns) - 1;
+            $this->width = (100 / $columns) - 1;
             $this->sitemap->params->set('columns', $columns);
         }
     }
 
-    /**
-     * Prints one node of the sitemap
-     *
-     *
-     * @param object $node
-     * @return boolean
-     */
-    function printNode(&$node)
+    public function printSitemap()
     {
+        foreach ($this->items as $menutype => &$items) {
 
+            $node = new stdClass;
+            $node->uid = 'menu-' . $menutype;
+            $node->menutype = $menutype;
+            $node->priority = null;
+            $node->changefreq = null;
+            $node->browserNav = 3;
+            $node->type = 'separator';
+
+            // TODO allow the user to provide the module used to display that menu, or some other workaround
+            $node->name = $this->getMenuTitle($menutype);
+
+            $this->startMenu($node);
+            $this->printMenuTree($items);
+            $this->endMenu($node);
+        }
+
+        return $this->output;
+    }
+
+    function printNode(stdClass $node)
+    {
         $out = '';
 
         if ($this->isExcluded($node->id, $node->uid) && !$this->canEdit) {
-            return FALSE;
+            return false;
         }
 
         // To avoid duplicate children in the same parent
-        if (!empty($this->_parent_children[$this->level][$node->uid])) {
-            return FALSE;
+        if (!empty($this->parent_children[$this->level][$node->uid])) {
+            return false;
         }
 
-        //var_dump($this->_parent_children[$this->level]);
-        $this->_parent_children[$this->level][$node->uid] = true;
+        $this->parent_children[$this->level][$node->uid] = true;
 
-        $out .= $this->_closeItem;
-        $out .= $this->_openList;
-        $this->_openList = "";
+        $out .= $this->closeItem;
+        $out .= $this->openList;
+        $this->openList = "";
 
         $out .= '<li>';
 
@@ -79,98 +120,160 @@ class XmapDisplayerHtml extends XmapDisplayer
 
         if ($node->browserNav != 3) {
             $link = JRoute::_($node->link, true, @$node->secure);
+        } else {
+            $link = $node->link;
         }
 
-        $node->name = htmlspecialchars($node->name);
+        $attributes = array('title' => $node->name);
+
         switch ($node->browserNav) {
-            case 1:        // open url in new window
-                $ext_image = '';
-                if ($this->sitemap->params->get('exlinks')) {
-                    $ext_image = '&nbsp;<img src="' . $this->live_site . '/components/com_xmap/assets/images/' . $this->sitemap->params->get('exlinks') . '" alt="' . JText::_('COM_XMAP_SHOW_AS_EXTERN_ALT') . '" title="' . JText::_('COM_XMAP_SHOW_AS_EXTERN_ALT') . '" border="0" />';
-                }
-                $out .= '<a href="' . $link . '" title="' . htmlspecialchars($node->name) . '" target="_blank">' . $node->name . $ext_image . '</a>';
+            case 1: // open url in new window
+            case 2: // open url in javascript popup window
+                $attributes['target'] = '_blank';
+                $out .= JHtml::_('link', $link, $node->name, $attributes);
                 break;
 
-            case 2:        // open url in javascript popup window
-                $ext_image = '';
-                if ($this->sitemap->params->get('exlinks')) {
-                    $ext_image = '&nbsp;<img src="' . $this->live_site . '/components/com_xmap/assets/images/' . $this->sitemap->params->get('exlinks') . '" alt="' . JText::_('COM_XMAP_SHOW_AS_EXTERN_ALT') . '" title="' . JText::_('COM_XMAP_SHOW_AS_EXTERN_ALT') . '" border="0" />';
-                }
-                $out .= '<a href="' . $link . '" title="' . $node->name . '" target="_blank" ' . "onClick=\"javascript: window.open('" . $link . "', '', 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=780,height=550'); return false;\">" . $node->name . $ext_image . "</a>";
-                break;
-
-            case 3:        // no link
+            case 3: // no link
                 $out .= '<span>' . $node->name . '</span>';
                 break;
 
-            default:       // open url in parent window
-                $out .= '<a href="' . $link . '" title="' . $node->name . '">' . $node->name . '</a>';
+            default: // open url in parent window
+                $out .= JHtml::_('link', $link, $node->name, $attributes);
                 break;
         }
 
-        $this->_closeItem = "</li>\n";
-        $this->_childs[$this->level]++;
-        echo $out;
+        $this->closeItem = '</li>' . PHP_EOL;
+        $this->childs[$this->level]++;
+
+        $this->output .= $out;
 
         if ($this->canEdit) {
             if ($this->isExcluded($node->id, $node->uid)) {
-                $img = '<img src="' . $this->live_site . '/components/com_xmap/assets/images/unpublished.png" alt="v" title="' . JText::_('JUNPUBLISHED') . '">';
-                $class = 'xmapexclon';
+                $title = JText::_('JUNPUBLISHED');
+                $class = 'icon-remove-sign';
             } else {
-                $img = '<img src="' . $this->live_site . '/components/com_xmap/assets/images/tick.png" alt="x" title="' . JText::_('JPUBLISHED') . '" />';
-                $class = 'xmapexcloff';
+                $class = 'icon-ok-sign';
+                $title = JText::_('JPUBLISHED');
             }
-            echo ' <a href= "#" class="xmapexcl ' . $class . '" rel="{uid:\'' . $node->uid . '\',itemid:' . $node->id . '}">' . $img . '</a>';
+            $this->output .= '&nbsp;<i data-id="' . $this->sitemap->id . '" data-uid="' . $node->uid . '" data-itemid="' . $node->id . '" class="hasTooltip ' . $class . '" title="' . $title . '"></i>';
         }
         $this->count++;
 
-        $this->_last_child[$this->level] = $node->uid;
+        $this->last_child[$this->level] = $node->uid;
 
-        return TRUE;
+        return true;
     }
 
-    /**
-     * Moves sitemap level up or down
-     */
-    function changeLevel($level)
+    public function changeLevel($level)
     {
         if ($level > 0) {
             # We do not print start ul here to avoid empty list, it's printed at the first child
             $this->level += $level;
-            $this->_childs[$this->level] = 0;
-            $this->_openList = "\n<ul class=\"level_" . $this->level . "\">\n";
-            $this->_closeItem = '';
+            $this->childs[$this->level] = 0;
+            $this->openList = PHP_EOL . '<ul class="level_' . $this->level . '">' . PHP_EOL;
+            $this->closeItem = '';
 
             // If we are moving up, then lets clean the children of this level
             // because for sure this is a new set of links
-            if (empty ($this->_last_child[$this->level - 1]) || empty ($this->_parent_children[$this->level]['parent']) || $this->_parent_children[$this->level]['parent'] != $this->_last_child[$this->level - 1]) {
-                $this->_parent_children[$this->level] = array();
-                $this->_parent_children[$this->level]['parent'] = @$this->_last_child[$this->level - 1];
+            if (
+                empty ($this->last_child[$this->level - 1])
+                || empty ($this->parent_children[$this->level]['parent'])
+                || $this->parent_children[$this->level]['parent'] != $this->last_child[$this->level - 1]
+            ) {
+                $this->parent_children[$this->level] = array();
+                $this->parent_children[$this->level]['parent'] = @$this->last_child[$this->level - 1];
             }
         } else {
-            if ($this->_childs[$this->level]) {
-                echo $this->_closeItem . "</ul>\n";
+            if ($this->childs[$this->level]) {
+                $this->output .= $this->closeItem . '</ul>' . PHP_EOL;
             }
-            $this->_closeItem = '</li>';
-            $this->_openList = '';
+
+            $this->closeItem = '</li>' . PHP_EOL;
+            $this->openList = '';
             $this->level += $level;
         }
     }
 
-    function startMenu(&$menu)
+    /**
+     * Function called before displaying the menu
+     *
+     * @param stdClass $node The menu node item
+     * @return boolean
+     */
+    protected function startMenu(stdClass $node)
     {
-        if ($this->sitemap->params->get('columns') > 1)            // use columns
-            echo '<div style="float:left;width:' . $this->_width . '%;">';
-        if ($this->sitemap->params->get('show_menutitle'))         // show menu titles
-            echo '<h2 class="menutitle">' . $menu->name . '</h2>';
+        if ($this->sitemap->params->get('columns') > 1) {
+            $this->output .= '<div style="float:left;width:' . $this->width . '%;">' . PHP_EOL;
+        }
+
+        if ($this->sitemap->params->get('show_menutitle')) {
+            $this->output .= '<h2 class="menutitle">' . $node->name . '</h2>' . PHP_EOL;
+        }
     }
 
-    function endMenu(&$menu)
+    /**
+     * Function called after displaying the menu
+     *
+     * @param stdClass $node The menu node item
+     * @return boolean
+     */
+    protected function endMenu(stdClass $node)
     {
-        $sitemap =& $this->sitemap;
-        $this->_closeItem = '';
-        if ($sitemap->params->get('columns') > 1) {
-            echo "</div>\n";
+        $this->closeItem = '';
+        if ($this->sitemap->params->get('columns') > 1) {
+            $this->output .= '</div>' . PHP_EOL;
         }
+    }
+
+    /**
+     * @param bool $val
+     */
+    public function setCanEdit($val)
+    {
+        $this->canEdit = (bool)$val;
+    }
+
+    protected function getMenuTitle($menutype)
+    {
+        static $modules = null;
+
+        if (is_null($modules)) {
+            /** @var JApplicationSite $app */
+            $app = JFactory::getApplication();
+            $db = JFactory::getDbo();
+            $user = JFactory::getUser();
+            $modules = array();
+
+            $query = $db->getQuery(true)
+                ->select('m.params')
+                ->select('m.title')
+                ->from('#__modules AS m')
+                ->where('m.module = ' . $db->quote('mod_menu'))
+                ->where('m.published = ' . $db->quote(1))
+                ->where('m.client_id = ' . $db->quote(0))
+                ->where('m.access IN(' . $db->quote(implode(',', $user->getAuthorisedViewLevels())) . ')');
+
+            if ($app->getLanguageFilter()) {
+                $query->where('m.language IN(' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
+            }
+
+            $db->setQuery($query);
+
+            $result = $db->loadObjectList();
+
+            if (!empty($result)) {
+                foreach ($result as $module) {
+                    $module->params = new Registry($module->params);
+                    $module->menutype = $module->params->get('menutype');
+                    $modules[$module->menutype] = $module;
+                }
+            }
+        }
+
+        if (isset($modules[$menutype])) {
+            return $modules[$menutype]->title;
+        }
+
+        return null;
     }
 }

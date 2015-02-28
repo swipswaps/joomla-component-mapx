@@ -9,231 +9,360 @@
 
 defined('_JEXEC') or die;
 
-class XmapDisplayerXml extends XmapDisplayer
+class XmapDisplayerXml extends XmapDisplayerAbstract
 {
-
     /**
-     *
-     * @var array  Stores the list of links that have been already included in
-     *             the sitemap to avoid duplicated items
-     */
-    private $links;
-
-    /**
-     *
      * @var string
      */
     public $view = 'xml';
 
-    protected $showTitle = false;
-
-    protected $showExcluded = false;
+    /**
+     * @var array
+     */
+    protected $links = array();
 
     /**
-     *
-     * @var int Indicates if this is a google news sitemap or not
+     * @var bool
      */
-    var $isNews = 0;
+    protected $isNews = false;
 
     /**
-     *
-     * @var int Indicates if this is a google news sitemap or not
+     * @var bool
      */
-    var $isImages = 0;
+    protected $isImages = false;
 
-    function __construct($config, $sitemap)
+    /**
+     * @var bool
+     */
+    protected $isVideos = false;
+
+    /**
+     * @var array
+     */
+    protected $sitemapItems = array();
+
+    /**
+     * @var SimpleXMLElement
+     */
+    protected $baseXml = null;
+
+    /**
+     * @var string ISO 639 language code for news sitemaps
+     */
+    protected $defaultLanguage = '*';
+
+    public function __construct(stdClass $sitemap, array &$items, array &$extensions)
     {
-        parent::__construct($config, $sitemap);
+        parent::__construct($sitemap, $items, $extensions);
 
-        $this->uids = array();
+        $languageTag = JFactory::getLanguage()->getTag();
 
-        // TODO wtf is this?
-        $this->defaultLanguage = strtolower(JFactory::getLanguage()->getTag());
-        if (preg_match('/^([a-z]+)-.*/', $this->defaultLanguage, $matches) && !in_array($this->defaultLanguage, array(' zh-cn', ' zh-tw'))) {
-            $this->defaultLanguage = $matches[1];
+        if (in_array($languageTag, array('zh-cn', 'zh-tw'))) {
+            $this->defaultLanguage = $languageTag;
+        } else {
+            $this->defaultLanguage = XmapHelper::getLanguageCode();
+        }
+    }
+
+    protected function setBaseXml()
+    {
+        $this->baseXml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
+        $this->baseXml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+
+        if ($this->isType('news')) {
+            $this->baseXml->addAttribute('xmlns:xmlns:news', 'http://www.google.com/schemas/sitemap-news/0.9');
         }
 
-        $this->showTitle = JRequest::getBool('filter_showtitle', 0);
-        $this->showExcluded = JRequest::getBool('filter_showexcluded', 0);
+        if ($this->isType('images')) {
+            $this->baseXml->addAttribute('xmlns:xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
+        }
 
-        $db = JFactory::getDbo();
-        $this->nullDate = $db->getNullDate();
+        if ($this->isType('videos')) {
+            $this->baseXml->addAttribute('xmlns:xmlns:video', 'http://www.google.com/schemas/sitemap-video/1.1');
+        }
+    }
+
+    public function printSitemap()
+    {
+        foreach ($this->items as $menutype => &$items) {
+            $this->printMenuTree($items);
+        }
+        $dom = new DomDocument();
+        $dom->loadXML($this->baseXml->asXML());
+        $dom->formatOutput = true;
+
+        $this->output = $dom->saveXML();
+
+        return $this->output;
     }
 
     /**
      * Prints an XML node for the sitemap
      *
-     * @todo use SimpleXMLElement
-     * @param stdclass $node
+     * @param stdClass $node
      * @return bool
      */
-    function printNode($node)
+    public function printNode(stdClass $node)
     {
-        $node->isExcluded = false;
+        if (is_null($this->baseXml)) {
+            $this->setBaseXml();
+        }
+
         if ($this->isExcluded($node->id, $node->uid)) {
-            if (!$this->showExcluded || !$this->canEdit) {
-                return false;
-            }
-            $node->isExcluded = true;
+            return false;
         }
 
-        if ($this->isNews && (!isset($node->newsItem) || !$node->newsItem)) {
-            return true;
+        if ($this->isType('news') && (!isset($node->newsItem) || !$node->newsItem)) {
+            return false;
         }
 
-        // For images sitemaps only display pages with images
-        if ($this->isImages && (!isset($node->images) || !count($node->images))) {
-            return true;
+        if ($this->isType('images') && (!isset($node->images) || empty($node->images))) {
+            return false;
         }
 
-        // Get the item's URL
-        $link = JRoute::_($node->link, true, @$node->secure == 0 ? (JFactory::getURI()->isSSL() ? 1 : -1) : $node->secure);
+        if ($this->isType('videos') && (!isset($node->videos) || empty($node->videos))) {
+            return false;
+        }
 
-        if (!isset($node->browserNav))
+        if (!isset($node->browserNav)) {
             $node->browserNav = 0;
+        }
 
-        if ($node->browserNav != 3   // ignore "no link"
-            && empty($this->links[$link])
-        ) { // ignore links that have been added already
-            $this->count++;
-            $this->links[$link] = 1;
+        if ($node->browserNav == 3) {
+            return false;
+        }
 
-            if (!isset($node->priority))
-                $node->priority = "0.5";
+        if (!isset($node->secure)) {
+            $node->secure = JUri::getInstance()->isSSL();
+        }
 
-            if (!isset($node->changefreq))
-                $node->changefreq = 'daily';
+        $link = JRoute::_($node->link, true, $node->secure);
 
-            // Get the chancefrequency and priority for this item
+        // link is already in xml map
+        if (isset($this->links[$link])) {
+            return true;
+        }
+
+        $this->count++;
+        $this->links[$link] = true;
+
+        if (!isset($node->priority)) {
+            $node->priority = $this->params->get('default_priority', 0.5);
+        }
+
+        if (!isset($node->changefreq)) {
+            $node->changefreq = $this->params->get('default_changefreq', 'daily');
+        }
+
+        $modified = $this->getValidNodeModified($node);
+
+        // mandatory fields in every type of sitemap
+        $url = $this->baseXml->addChild('url');
+        $url->addChild('loc', $link);
+
+        /**
+         * @see https://support.google.com/webmasters/answer/183668
+         */
+        if ($this->isType('normal')) {
+            if ($modified) {
+                $url->addChild('lastmod', $modified);
+            }
+
             $changefreq = $this->getProperty('changefreq', $node->changefreq, $node->id, 'xml', $node->uid);
             $priority = $this->getProperty('priority', $node->priority, $node->id, 'xml', $node->uid);
 
-            echo '<url>' . "\n";
-            echo '<loc>', $link, '</loc>' . "\n";
-            if ($this->canEdit) {
-                if ($this->showTitle) {
-                    echo '<title><![CDATA[' . $node->name . ']]></title>' . "\n";
-                }
-                if ($this->showExcluded) {
-                    echo '<rowclass>', ($node->isExcluded ? 'excluded' : ''), '</rowclass>';
-                }
-                echo '<uid>', $node->uid, '</uid>' . "\n";
-                echo '<itemid>', $node->id, '</itemid>' . "\n";
-            }
-            $modified = (isset($node->modified) && $node->modified != FALSE && $node->modified != $this->nullDate && $node->modified != -1) ? $node->modified : NULL;
-            if (!$modified && $this->isNews) {
-                $modified = time();
-            }
-            if ($modified && !is_numeric($modified)) {
-                $date = new JDate($modified);
-                $modified = $date->toUnix();
-            }
-            if ($modified) {
-                $modified = gmdate('Y-m-d\TH:i:s\Z', $modified);
-            }
-
-            // If this is not a news sitemap
-            if (!$this->isNews) {
-                if ($this->isImages) {
-                    foreach ($node->images as $image) {
-                        echo '<image:image>', "\n";
-                        echo '<image:loc>', $image->src, '</image:loc>', "\n";
-                        if ($image->title) {
-                            $image->title = str_replace('&', '&amp;', html_entity_decode($image->title, ENT_NOQUOTES, 'UTF-8'));
-                            echo '<image:title>', $image->title, '</image:title>', "\n";
-                        } else {
-                            echo '<image:title />';
-                        }
-                        if (isset($image->license) && $image->license) {
-                            echo '<image:license>', str_replace('&', '&amp;', html_entity_decode($image->license, ENT_NOQUOTES, 'UTF-8')), '</image:license>', "\n";
-                        }
-                        echo '</image:image>', "\n";
-                    }
-                } else {
-                    if ($modified) {
-                        echo '<lastmod>', $modified, '</lastmod>' . "\n";
-                    }
-                    echo '<changefreq>', $changefreq, '</changefreq>' . "\n";
-                    echo '<priority>', $priority, '</priority>' . "\n";
-                }
-            } else {
-                if (isset($node->keywords)) {
-                    $keywords = htmlspecialchars($node->keywords);
-                } else {
-                    $keywords = '';
-                }
-
-                if (!isset($node->language) || $node->language == '*') {
-                    $node->language = $this->defaultLanguage;
-                }
-
-                echo "<news:news>\n";
-                echo '<news:publication>' . "\n";
-                echo '  <news:name>' . (htmlspecialchars($this->sitemap->params->get('news_publication_name'))) . '</news:name>' . "\n";
-                echo '  <news:language>' . $node->language . '</news:language>' . "\n";
-                echo '</news:publication>' . "\n";
-                echo '<news:publication_date>', $modified, '</news:publication_date>' . "\n";
-                echo '<news:title><![CDATA[' . $node->name . ']]></news:title>' . "\n";
-                if ($keywords) {
-                    echo '<news:keywords>', $keywords, '</news:keywords>' . "\n";
-                }
-                echo "</news:news>\n";
-            }
-            echo '</url>', "\n";
-        } else {
-            return empty($this->links[$link]);
+            $url->addChild('changefreq', $changefreq);
+            $url->addChild('priority', $priority);
         }
+
+        /**
+         * @see https://support.google.com/news/publisher/answer/74288
+         */
+        if ($this->isType('news')) {
+
+            if (!isset($node->language) || $node->language == '*') {
+                $node->language = $this->defaultLanguage;
+            }
+
+            $news = $url->addChild('news:news');
+            $publication = $news->addChild('news:publication');
+            $publication->addChild('news:name', $this->sitemap->params->get('news_publication_name'));
+            $publication->addChild('news:language', $node->language);
+            $news->addChild('news:publication_date', $modified);
+            $news->addChild('news:title', $node->name);
+
+            if (isset($node->keywords) && !empty($node->keywords)) {
+                $news->addChild('news:keywords', $node->keywords);
+            }
+
+            if (isset($node->access) && !empty($node->access)) {
+                $news->addChild('news:access', $node->access);
+            }
+
+            if (isset($node->genres) && !empty($node->genres)) {
+                $news->addChild('news:genres', $node->genres);
+            }
+
+            if (isset($node->stock_tickers) && !empty($node->stock_tickers)) {
+                $news->addChild('news:stock_tickers', $node->stock_tickers);
+            }
+        }
+
+        /**
+         * @see https://support.google.com/webmasters/answer/178636
+         */
+        if ($this->isType('images')) {
+            foreach ($node->images as $img) {
+                $image = $this->baseXml->addChild('image:image');
+                $image->addChild('image:loc', $img->src);
+
+                if (isset($img->title) && !empty($img->title)) {
+                    $image->addChild('image:title', $img->title);
+                }
+
+                if (isset($img->caption) && !empty($img->caption)) {
+                    $image->addChild('image:caption', $image->caption);
+                }
+
+                if (isset($img->geo_location) && !empty($img->geo_location)) {
+                    $image->addChild('image:geo_location', $img->geo_location);
+                }
+
+                if (isset($img->license) && !empty($img->license)) {
+                    $image->addChild('image:license', $img->license);
+                }
+            }
+        }
+
+        /**
+         * @see https://support.google.com/webmasters/answer/80472
+         */
+        if ($this->isType('videos')) {
+            foreach ($node->videos as $vdi) {
+                $video = $this->baseXml->addChild('video:video');
+                $video->addChild('video:thumbnail_loc', $vdi->thumbnail_loc);
+                $video->addChild('video:title', $vdi->title);
+                $video->addChild('video:description', $vdi->description);
+
+                if (isset($vdi->video) && !empty($vdi->video)) {
+                    $video->addChild('video:video', $vdi->video);
+                }
+
+                if (isset($vdi->duration) && !empty($vdi->duration)) {
+                    $video->addChild('video:duration', $vdi->duration);
+                }
+
+                if (isset($vdi->duration) && !empty($vdi->duration)) {
+                    $video->addChild('video:duration', $vdi->duration);
+                }
+
+                if (isset($vdi->duration) && !empty($vdi->duration)) {
+                    $video->addChild('video:duration', $vdi->duration);
+                }
+            }
+        }
+
         return true;
     }
 
+    protected function getValidNodeModified(stdClass $node)
+    {
+        $nullDate = JFactory::getDbo()->getNullDate();
+
+        $modified = (isset($node->modified) && $node->modified != false && $node->modified != $nullDate && $node->modified != -1) ? $node->modified : null;
+        if (!$modified && $this->isType('news')) {
+            $modified = JFactory::getDate()->toUnix();
+        }
+        if ($modified && !is_numeric($modified)) {
+            $modified = JFactory::getDate($modified)->toUnix();
+        }
+
+        if ($modified) {
+            $modified = gmdate('Y-m-d\TH:i:s\Z', $modified);
+        }
+
+        return $modified;
+    }
+
     /**
+     * @todo also check if value on menuitem (added with new system plugin)
      *
      * @param string $property The property that is needed
      * @param string $value The default value if the property is not found
      * @param int $Itemid The menu item id
      * @param string $view (xml / html)
-     * @param int $uid Unique id of the element on the sitemap
-     *                      (the id asigned by the extension)
+     * @param int $uid Unique id of the element on the sitemap (the id asigned by the extension)
+     *
      * @return string
      */
-    function getProperty($property, $value, $Itemid, $view, $uid)
+    protected function getProperty($property, $value, $Itemid, $view, $uid)
     {
-        if (isset($this->jview->sitemapItems[$view][$Itemid][$uid][$property])) {
-            return $this->jview->sitemapItems[$view][$Itemid][$uid][$property];
+        if (isset($this->sitemapItems[$view][$Itemid][$uid][$property])) {
+            return $this->sitemapItems[$view][$Itemid][$uid][$property];
         }
         return $value;
     }
 
-    /**
-     * Called on every level change
-     *
-     * @param int $level
-     * @return boolean
-     */
-    function changeLevel($level)
+    protected function isType($type)
     {
-        return true;
+        switch ($type) {
+            default:
+            case 'normal':
+                return !$this->isNews && !$this->isImages && !$this->isVideos;
+                break;
+
+            case'news':
+                return $this->isNews && !$this->isImages && !$this->isVideos;
+                break;
+
+            case 'images':
+                return $this->isImages && !$this->isNews;
+                break;
+
+            case 'videos':
+                return $this->isVideos && !$this->isNews;
+                break;
+        }
     }
 
     /**
-     * Function called before displaying the menu
-     *
-     * @param stdclass $menu The menu node item
-     * @return boolean
+     * @param array $items
      */
-    function startMenu($menu)
+    public function setSitemapItems(array $items)
     {
-        return true;
+        $this->sitemapItems = $items;
     }
 
     /**
-     * Function called after displaying the menu
-     *
-     * @param stdclass $menu The menu node item
-     * @return boolean
+     * @param bool $val
      */
-    function endMenu($menu)
+    public function displayAsNews($val)
     {
-        return true;
+        $this->isNews = (bool)$val;
+    }
+
+    /**
+     * @param bool $val
+     */
+    public function displayAsImages($val)
+    {
+        $this->isImages = (bool)$val;
+    }
+
+    /**
+     * @param bool $val
+     */
+    public function displayAsVideos($val)
+    {
+        $this->isVideos = (bool)$val;
+    }
+
+    public function __get($var)
+    {
+        if (!in_array($var, array('isNews', 'isImages', 'isVideos'))) {
+            throw new InvalidArgumentException();
+        }
+
+        return $this->$var;
     }
 }

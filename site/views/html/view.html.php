@@ -11,25 +11,50 @@ defined('_JEXEC') or die;
 
 class XmapViewHtml extends JViewLegacy
 {
+    /**
+     * @var JObject
+     */
     protected $state;
-    protected $print;
+
+    /**
+     * @var Joomla\Registry\Registry
+     */
+    protected $params;
+
+    /**
+     * @var XmapDisplayerHtml
+     */
+    protected $displayer;
+
+    /**
+     * @var stdClass
+     */
+    public $item;
+
+    /**
+     * @var array
+     */
+    public $items;
+
+    /**
+     * @var array
+     */
+    protected $extensions;
+
+    /**
+     * @var bool
+     */
+    protected $canEdit;
 
     function display($tpl = null)
     {
-        // Initialise variables.
-        $app = JFactory::getApplication();
-        $user = JFactory::getUser();
-        $doc = JFactory::getDocument();
-
-        // Get view related request variables.
-        $this->print = JRequest::getBool('print');
-
-        // Get model data.
         $this->state = $this->get('State');
+        $this->params = $this->state->get('params');
         $this->item = $this->get('Item');
         $this->items = $this->get('Items');
+        $this->extensions = $this->get('Extensions');
 
-        $this->canEdit = JFactory::getUser()->authorise('core.admin', 'com_xmap');
+        $this->canEdit = JFactory::getUser()->authorise('core.edit', 'com_xmap.sitemap.' . $this->item->id);
 
         // Check for errors.
         if (count($errors = $this->get('Errors'))) {
@@ -37,90 +62,56 @@ class XmapViewHtml extends JViewLegacy
             return false;
         }
 
-        $this->extensions = $this->get('Extensions');
-        // Add router helpers.
-        $this->item->slug = $this->item->alias ? ($this->item->id . ':' . $this->item->alias) : $this->item->id;
+        $this->displayer = new XmapDisplayerHtml($this->item, $this->items, $this->extensions);
+        $this->displayer->setCanEdit($this->canEdit);
 
-        $this->item->rlink = JRoute::_('index.php?option=com_xmap&view=html&id=' . $this->item->slug);
+        $this->pageclass_sfx = htmlspecialchars($this->params->get('pageclass_sfx'));
 
-        // Create a shortcut to the paramemters.
-        $params = &$this->state->params;
-        $offset = $this->state->get('page.offset');
+        $this->prepareDocument();
 
-        // If a guest user, they may be able to log in to view the full article
-        // TODO: Does this satisfy the show not auth setting?
-        if (!$this->item->params->get('access-view')) {
-            if ($user->get('guest')) {
-                // Redirect to login
-                $uri = JFactory::getURI();
-                $app->redirect(
-                    'index.php?option=com_users&view=login&return=' . base64_encode($uri),
-                    JText::_('Xmap_Error_Login_to_view_sitemap')
-                );
-                return;
-            } else {
-                JError::raiseWarning(403, JText::_('Xmap_Error_Not_auth'));
-                return;
-            }
-        }
+        $this->getModel()->hit($this->displayer->getCount());
 
-        // Override the layout.
-        if ($layout = $params->get('layout')) {
-            $this->setLayout($layout);
-        }
-
-        $this->displayer = new XmapDisplayerHtml($params, $this->item);
-
-        $this->displayer->setJView($this);
-        $this->displayer->canEdit = $this->canEdit;
-
-        $this->_prepareDocument();
         parent::display($tpl);
-
-        $model = $this->getModel();
-        $model->hit($this->displayer->getCount());
     }
 
-    /**
-     * Prepares the document
-     */
-    protected function _prepareDocument()
+    protected function prepareDocument()
     {
         $app = JFactory::getApplication();
-        $pathway = $app->getPathway();
         $menus = $app->getMenu();
         $title = null;
 
-        // Because the application sets a default page title, we need to get it from the menu item itself
-        if ($menu = $menus->getActive()) {
-            if (isset($menu->query['view']) && isset($menu->query['id'])) {
+        // Because the application sets a default page title,
+        // we need to get it from the menu item itself
+        $menu = $menus->getActive();
 
-                if ($menu->query['view'] == 'html' && $menu->query['id'] == $this->item->id) {
-                    $title = $menu->title;
-                    if (empty($title)) {
-                        $title = $app->getCfg('sitename');
-                    } else if ($app->getCfg('sitename_pagetitles', 0) == 1) {
-                        $title = JText::sprintf('JPAGETITLE', $app->getCfg('sitename'), $title);
-                    } else if ($app->getCfg('sitename_pagetitles', 0) == 2) {
-                        $title = JText::sprintf('JPAGETITLE', $title, $app->getCfg('sitename'));
-                    }
-                    // set meta description and keywords from menu item's params
-                    $params = new Joomla\Registry\Registry();
-                    $params->loadString($menu->params);
-                    $this->document->setDescription($params->get('menu-meta_description'));
-                    $this->document->setMetadata('keywords', $params->get('menu-meta_keywords'));
-                }
-            }
+        if ($menu) {
+            $this->params->def('page_heading', $this->params->get('page_title', $this->item->title));
+        } else {
+            $this->params->def('page_heading', $this->item->title);
         }
+
+        $title = $this->params->get('page_title', '');
+
+        if (empty($title)) {
+            $title = $app->get('sitename');
+        } elseif ($app->get('sitename_pagetitles', 0) == 1) {
+            $title = JText::sprintf('JPAGETITLE', $app->get('sitename'), $title);
+        } elseif ($app->get('sitename_pagetitles', 0) == 2) {
+            $title = JText::sprintf('JPAGETITLE', $title, $app->get('sitename'));
+        }
+
         $this->document->setTitle($title);
 
-        if ($app->getCfg('MetaTitle') == '1') {
-            $this->document->setMetaData('title', $title);
+        if ($this->params->get('menu-meta_description')) {
+            $this->document->setDescription($this->params->get('menu-meta_description'));
         }
 
-        if ($this->print) {
-            $this->document->setMetaData('robots', 'noindex, nofollow');
+        if ($this->params->get('menu-meta_keywords')) {
+            $this->document->setMetadata('keywords', $this->params->get('menu-meta_keywords'));
+        }
+
+        if ($this->params->get('robots')) {
+            $this->document->setMetadata('robots', $this->params->get('robots'));
         }
     }
-
 }

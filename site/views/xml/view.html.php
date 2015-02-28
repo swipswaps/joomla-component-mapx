@@ -11,34 +11,58 @@ defined('_JEXEC') or die;
 
 class XmapViewXml extends JViewLegacy
 {
-
+    /**
+     * @var JObject
+     */
     protected $state;
 
-    protected $print;
+    /**
+     * @var Joomla\Registry\Registry
+     */
+    protected $params;
 
-    protected $_obLevel;
+    /**
+     * @var XmapDisplayerXml
+     */
+    protected $displayer;
+
+    /**
+     * @var stdClass
+     */
+    public $item;
+
+    /**
+     * @var array
+     */
+    public $items;
+
+    /**
+     * @var array
+     */
+    protected $sitemapItems;
+
+    /**
+     * @var array
+     */
+    protected $extensions;
 
     function display($tpl = null)
     {
-        // Initialise variables.
-        $app = JFactory::getApplication();
-        $this->user = JFactory::getUser();
-        $isNewsSitemap = JRequest::getInt('news', 0);
-        $this->isImages = JRequest::getInt('images', 0);
-
-
-        $this->item = $this->get('Item');
         $this->state = $this->get('State');
-        $this->canEdit = JFactory::getUser()->authorise('core.admin', 'com_xmap');
-
-        // For now, news sitemaps are not editable
-        $this->canEdit = $this->canEdit && !$isNewsSitemap;
-
-
-        // Get model data.
+        $this->params = $this->state->get('params');
+        $this->item = $this->get('Item');
         $this->items = $this->get('Items');
         $this->sitemapItems = $this->get('SitemapItems');
         $this->extensions = $this->get('Extensions');
+
+        $input = JFactory::getApplication()->input;
+
+        $this->user = JFactory::getUser();
+
+        $web = JApplicationCms::getInstance('site');
+        $web->clearHeaders();
+        $web->setHeader('Content-Type', 'application/xml; charset=UTF-8');
+        $web->sendHeaders();
 
         // Check for errors.
         if (count($errors = $this->get('Errors'))) {
@@ -46,45 +70,16 @@ class XmapViewXml extends JViewLegacy
             return false;
         }
 
-        // Add router helpers.
-        $this->item->slug = $this->item->alias ? ($this->item->id . ':' . $this->item->alias) : $this->item->id;
-
-        $this->item->rlink = JRoute::_('index.php?option=com_xmap&view=xml&id=' . $this->item->slug);
-
-
-        // Create a shortcut to the paramemters.
-        $params = &$this->state->params;
-
-        if (!$this->item->params->get('access-view')) {
-            if ($this->user->get('guest')) {
-                // Redirect to login
-                $uri = JFactory::getURI();
-                $app->redirect(
-                    'index.php?option=com_users&view=login&return=' . base64_encode($uri),
-                    JText::_('Xmap_Error_Login_to_view_sitemap')
-                );
-                return;
-            } else {
-                JError::raiseWarning(403, JText::_('Xmap_Error_Not_auth'));
-                return;
-            }
-        }
-
-        // Override the layout.
-        if ($layout = $params->get('layout')) {
-            $this->setLayout($layout);
-        }
-
-        $this->displayer = new XmapDisplayerXml($params, $this->item);
-
-        $this->displayer->setJView($this);
-
-        $this->displayer->isNews = $isNewsSitemap;
-        $this->displayer->isImages = $this->isImages;
-        $this->displayer->canEdit = $this->canEdit;
+        $this->displayer = new XmapDisplayerXml($this->item, $this->items, $this->extensions);
+        $this->displayer->displayAsNews($input->getBool('news'));
+        $this->displayer->displayAsImages($input->getBool('images'));
+        $this->displayer->displayAsVideos($input->getBool('videos'));
+        $this->displayer->setSitemapItems($this->sitemapItems);
 
         $this->getModel()->hit($this->displayer->getCount());
 
         parent::display($tpl);
+
+        JFactory::getApplication()->close();
     }
 }

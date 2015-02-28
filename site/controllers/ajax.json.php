@@ -11,48 +11,80 @@ defined('_JEXEC') or die;
 
 class XmapControllerAjax extends JControllerLegacy
 {
-
     public function editElement()
     {
-        JSession::checkToken('get') or jexit(JText::_('JINVALID_TOKEN'));
+        try {
+            $result = $this->handleEditElement();
+            $message = $result->message;
+            unset($result->message);
 
-        jimport('joomla.utilities.date');
-        jimport('joomla.user.helper');
-        $user = JFactory::getUser();
-        $groups = array_keys(JUserHelper::getUserGroups($user->get('id')));
-        $result = new JRegistry('_default');
-        $sitemapId = JREquest::getInt('id');
+            echo new JResponseJson($result, $message);
+        } catch (Exception $e) {
+            echo new JResponseJson($e);
+        }
+    }
 
-        if (!$user->authorise('core.edit', 'com_xmap.sitemap.' . $sitemapId)) {
-            $result->setValue('result', 'KO');
-            $result->setValue('message', 'You are not authorized to perform this action!');
-        } else {
-            $model = $this->getModel('sitemap');
-            if ($model->getItem()) {
-                $action = JRequest::getCmd('action', '');
-                $uid = JRequest::getCmd('uid', '');
-                $itemid = JRequest::getInt('itemid', '');
-                switch ($action) {
-                    case 'toggleElement':
-                        if ($uid && $itemid) {
-                            $state = $model->toggleItem($uid, $itemid);
-                        }
-                        break;
-                    case 'changeProperty':
-                        $uid = JRequest::getCmd('uid', '');
-                        $property = JRequest::getCmd('property', '');
-                        $value = JRequest::getCmd('value', '');
-                        if ($uid && $itemid && $uid && $property) {
-                            $state = $model->chageItemPropery($uid, $itemid, 'xml', $property, $value);
-                        }
-                        break;
-                }
-            }
-            $result->set('result', 'OK');
-            $result->set('state', $state);
-            $result->set('message', '');
+    protected function handleEditElement()
+    {
+        if (!JSession::checkToken()) {
+            throw new InvalidArgumentException(JText::_('JINVALID_TOKEN'));
         }
 
-        echo $result->toString();
+        $input = JFactory::getApplication()->input;
+        $user = JFactory::getUser();
+        $model = $this->getModel('sitemap');
+
+        if (!$user->authorise('core.edit', 'com_xmap.sitemap.' . $input->getInt('id'))) {
+            throw new InvalidArgumentException(JText::_('JERROR_ALERTNOAUTHOR'));
+        }
+
+        if (!$model->getItem()) {
+            throw new InvalidArgumentException(JText::_('JGLOBAL_RESOURCE_NOT_FOUND'));
+        }
+
+        $action = $input->getCmd('action');
+        $uid = $input->getCmd('uid');
+        $itemid = $input->getInt('itemid');
+
+        if (!$uid || !$itemid || !$action) {
+            throw new InvalidArgumentException(JText::_('JERROR_AN_ERROR_HAS_OCCURRED'));
+        }
+
+        $result = new stdClass;
+        $result->state = -1;
+
+        switch ($action) {
+            case 'toggleElement':
+                $result->state = $model->toggleItem($uid, $itemid);
+
+                if ($result->state) {
+                    $result->message = JText::_('JPUBLISHED');
+                } else {
+                    $result->message = JText::_('JUNPUBLISHED');
+                }
+
+                break;
+
+            // TODO implement in html view
+            case 'changeProperty':
+                $property = $input->getCmd('property');
+                $value = $input->getCmd('value');
+
+                if (!$property || !$value) {
+                    throw new InvalidArgumentException(JText::_('JERROR_AN_ERROR_HAS_OCCURRED'));
+                }
+
+                $result->state = $model->chageItemPropery($uid, $itemid, 'xml', $property, $value);
+
+                if ($result->state) {
+                    $result->message = ''; // TODO
+                } else {
+                    $result->message = ''; // TODO
+                }
+
+                break;
+        }
+
+        return $result;
     }
 }

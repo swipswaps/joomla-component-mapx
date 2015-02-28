@@ -9,12 +9,34 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\Registry\Registry;
+
 abstract class XmapHelper
 {
+    protected static $extensions = null;
+
+    protected static $languageCode = null;
+
+    /**
+     * there is currently no fu***ing other way to get the short language code in Joomla :(
+     *
+     * @return string
+     */
+    public static function getLanguageCode()
+    {
+        if (is_null(self::$languageCode)) {
+            $languages = JLanguageHelper::getLanguages('lang_code');
+            self::$languageCode = $languages[JFactory::getLanguage()->getTag()]->sef;
+        }
+
+        return self::$languageCode;
+    }
+
     public static function getMenuItems($selections)
     {
-        $db = JFactory::getDbo();
+        /** @var JApplicationSite $app */
         $app = JFactory::getApplication();
+        $db = JFactory::getDbo();
         $user = JFactory::getUser();
         $list = array();
 
@@ -45,22 +67,22 @@ abstract class XmapHelper
                 $query->where('n.language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
             }
 
-            // Get the list of menu items.
             $db->setQuery($query);
-            $tmpList = $db->loadObjectList('id');
-            $list[$menutype] = array();
 
-            // Check for a database error.
-            if ($db->getErrorNum()) {
-                JError::raiseWarning(021, $db->getErrorMsg());
+            try {
+                $tmpList = $db->loadObjectList('id');
+            } catch (RuntimeException $e) {
+                JError::raise(E_WARNING, $e->getCode(), $e->getMessage());
                 return array();
             }
+
+            $list[$menutype] = array();
 
             // Set some values to make nested HTML rendering easier.
             foreach ($tmpList as $id => $item) {
                 $item->items = array();
 
-                $params = new JRegistry($item->params);
+                $params = new Registry($item->params);
                 $item->uid = 'itemid' . $item->id;
 
                 if (preg_match('#^/?index.php.*option=(com_[^&]+)#', $item->link, $matches)) {
@@ -96,50 +118,55 @@ abstract class XmapHelper
         return $list;
     }
 
-    /**
-     * @todo refactor
-     *
-     * @return array
-     */
     public static function getExtensions()
     {
-        static $list;
+        if (is_null(self::$extensions)) {
+            $db = JFactory::getDbo();
 
-        if ($list != null) {
-            return $list;
-        }
-        $db = JFactory::getDBO();
+            // init as array so this method called be only once
+            self::$extensions = array();
 
-        $list = array();
-        // Get the menu items as a tree.
-        $query = $db->getQuery(true);
-        $query->select('*');
-        $query->from('#__extensions AS n');
-        $query->where('n.folder = \'xmap\'');
-        $query->where('n.enabled = 1');
+            $query = $db->getQuery(true)
+                ->select('e.element')
+                ->select('e.folder')
+                ->select('e.params')
+                ->from('#__extensions AS e')
+                ->where('e.folder = ' . $db->quote('xmap'))
+                ->where('e.enabled = ' . $db->quote(1));
 
-        // Get the list of menu items.
-        $db->setQuery($query);
-        $extensions = $db->loadObjectList('element');
+            $db->setQuery($query);
 
-        foreach ($extensions as $element => $extension) {
-            if (file_exists(JPATH_PLUGINS . '/' . $extension->folder . '/' . $element . '/' . $element . '.php')) {
-                require_once(JPATH_PLUGINS . '/' . $extension->folder . '/' . $element . '/' . $element . '.php');
-                $params = new JRegistry($extension->params);
-                $extension->params = $params->toArray();
-                $list[$element] = $extension;
+            try {
+                $extensions = $db->loadObjectList('element');
+            } catch (RuntimeException $e) {
+                return self::$extensions;
             }
+
+            if (empty($extensions)) {
+                return self::$extensions;
+            }
+
+            foreach ($extensions as $element => $extension) {
+                // file_exists should be not required if extension marked as enabled?!
+                if (JFile::exists(JPATH_PLUGINS . '/' . $extension->folder . '/' . $element . '/' . $element . '.php')) {
+                    require_once(JPATH_PLUGINS . '/' . $extension->folder . '/' . $element . '/' . $element . '.php');
+                    $params = new Registry($extension->params);
+                    $extension->params = $params->toArray();
+                }
+            }
+
+            self::$extensions = $extensions;
         }
 
-        return $list;
+        return self::$extensions;
     }
 
     /**
      * Call the function prepareMenuItem of the extension for the item (if any)
      *
-     * @param    object        Menu item object
+     * @param $item JMenu item object
      *
-     * @return    void
+     * @return void
      */
     public static function prepareMenuItem($item)
     {
@@ -148,18 +175,17 @@ abstract class XmapHelper
             $className = 'xmap_' . $item->option;
             $obj = new $className;
             if (method_exists($obj, 'prepareMenuItem')) {
+                // TODO
+                //call_user_func_array(array($obj, 'prepareMenuItem'), array(&$item, $extensions[$item->option]->params));
                 $obj->prepareMenuItem($item, $extensions[$item->option]->params);
             }
         }
     }
 
-
     public static function getImages($text, $max)
     {
-        if (!isset($urlBase)) {
-            $urlBase = JUri::base();
-            $urlBaseLen = strlen($urlBase);
-        }
+        $urlBase = JUri::base();
+        $urlBaseLen = strlen($urlBase);
 
         $images = null;
         $matches = $matches1 = $matches2 = array();
@@ -202,7 +228,7 @@ abstract class XmapHelper
         ) {
             $i = 2;
             foreach ($matches as $match) {
-                if (strpos($match[0], 'class="system-pagebreak"') !== FALSE) {
+                if (strpos($match[0], 'class="system-pagebreak"') !== false) {
                     $link = $baseLink . '&limitstart=' . ($i - 1);
 
                     if (@$match['alt']) {
@@ -212,7 +238,7 @@ abstract class XmapHelper
                     } else {
                         $title = JText::sprintf('Page #', $i);
                     }
-                    $subnode = new stdclass();
+                    $subnode = new stdClass();
                     $subnode->name = $title;
                     $subnode->expandible = false;
                     $subnode->link = $link;

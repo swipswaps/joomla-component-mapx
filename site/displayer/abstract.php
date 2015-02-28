@@ -9,144 +9,67 @@
 
 defined('_JEXEC') or die;
 
-class XmapDisplayer
+use Joomla\Registry\Registry;
+
+abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisplayer
 {
     /**
-     * @var int  Counter for the number of links on the sitemap
+     * @var string
      */
-    protected $count;
+    public $view = '';
 
     /**
-     * @var JViewLegacy
+     * @var int
      */
-    protected $jview;
+    protected $count = 0;
 
     /**
-     * @var mixed state from params
-     * @todo get type of var
+     * @var stdClass
      */
-    public $config;
-
-    /**
-     * @var mixed
-     * @todo get type of var
-     */
-    public $sitemap;
-
-    /**
-     * @var int   Current timestamp
-     */
-    public $now;
+    protected $sitemap;
 
     /**
      * @var array
      */
-    public $userLevels;
+    protected $items;
 
     /**
-     * @var string  The current value for the request var "view" (eg. html, xml)
+     * @var array
      */
-    public $view;
+    protected $extensions;
 
     /**
-     * @var bool
+     * @var string
      */
-    public $canEdit;
+    protected $output = '';
 
-    public function __construct($config, $sitemap)
+    /**
+     * @var Joomla\Registry\Registry
+     */
+    protected $params = null;
+
+    public function __construct(stdClass $sitemap, array &$items, array &$extensions)
     {
-        $this->userLevels = JFactory::getUser()->getAuthorisedViewLevels();
-        $this->now = JFactory::getDate()->toUnix();
-        $this->config = $config;
         $this->sitemap = $sitemap;
-        $this->isNews = false;
-        $this->isImages = false;
-        $this->count = 0;
-        $this->canEdit = false;
+        $this->items = $items;
+        $this->extensions = $extensions;
+
+        $this->params = JComponentHelper::getParams('com_xmap');
     }
 
-    public function printNode(&$node)
-    {
-        return false;
-    }
-
-    public function printSitemap()
-    {
-        foreach ($this->jview->items as $menutype => &$items) {
-
-            $node = new stdclass();
-
-            $node->uid = "menu-" . $menutype;
-            $node->menutype = $menutype;
-            $node->priority = null;
-            $node->changefreq = null;
-            // $node->priority = $menu->priority;
-            // $node->changefreq = $menu->changefreq;
-            $node->browserNav = 3;
-            $node->type = 'separator';
-            /**
-             * @todo allow the user to provide the module used to display that menu, or some other
-             * workaround
-             */
-            $node->name = $this->getMenuTitle($menutype, 'mod_menu'); // Get the name of this menu
-
-            $this->startMenu($node);
-            $this->printMenuTree($node, $items);
-            $this->endMenu($node);
-        }
-    }
-
-    public function setJView($view)
-    {
-        $this->jview = $view;
-    }
-
-    public function getMenuTitle($menutype, $module = 'mod_menu')
-    {
-        $app = JFactory::getApplication();
-        $db = JFactory::getDbo();
-        $title = $extra = '';
-
-        // Filter by language
-        if ($app->getLanguageFilter()) {
-            $extra = ' AND language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')';
-        }
-
-        // TODO JDatabaseQuery usage
-        $db->setQuery(
-            "SELECT * FROM #__modules WHERE module='{$module}' AND params "
-            . "LIKE '%\"menutype\":\"{$menutype}\"%' AND access IN (" . implode(',', $this->userLevels) . ") "
-            . "AND published=1 AND client_id=0 "
-            . $extra
-            . "LIMIT 1"
-        );
-        $module = $db->loadObject();
-        if ($module) {
-            $title = $module->title;
-        }
-        return $title;
-    }
-
-    protected function startMenu(&$node)
-    {
-        return true;
-    }
-
-    protected function endMenu(&$node)
-    {
-        return true;
-    }
-
-    protected function printMenuTree($menu, &$items)
+    /**
+     * @todo refactor
+     */
+    protected function printMenuTree(array &$items)
     {
         $this->changeLevel(1);
 
-        $router = JSite::getRouter();
+        $router = JFactory::getApplication()->getRouter();
 
         foreach ($items as $i => $item) {                   // Add each menu entry to the root tree.
             $excludeExternal = false;
 
-            $node = new stdclass;
+            $node = new stdClass;
 
             $node->id = $item->id;
             $node->uid = $item->uid;
@@ -156,7 +79,6 @@ class XmapDisplayer
             $node->priority = $item->priority;
             $node->changefreq = $item->changefreq;
             $node->type = $item->type;                // menuentry-type
-            $node->menutype = $menu->menutype;            // menuentry-type
             $node->home = $item->home;                // If it's a home menu entry
             // $node->link      = isset( $item->link ) ? htmlspecialchars( $item->link ) : '';
             $node->link = $item->link;
@@ -201,23 +123,24 @@ class XmapDisplayer
 
                 //Restore the original link
                 $node->link = $item->link;
-                $this->printMenuTree($node, $item->items);
-                $matches = array();
-                //if ( preg_match('#^/?index.php.*option=(com_[^&]+)#',$node->link,$matches) ) {
-                if ($node->option) {
-                    if (!empty($this->jview->extensions[$node->option])) {
-                        $node->uid = $node->option;
-                        $className = 'xmap_' . $node->option;
-                        $result = call_user_func_array(array($className, 'getTree'), array(&$this, &$node, &$this->jview->extensions[$node->option]->params));
-                    }
+                $this->printMenuTree($item->items);
+
+                if (isset($node->option) && !empty($this->extensions[$node->option])) {
+                    $node->uid = $node->option;
+                    call_user_func_array(array('xmap_' . $node->option, 'getTree'), array(&$this, &$node, &$this->extensions[$node->option]->params));
                 }
-                //XmapPlugins::printTree( $this, $node, $this->jview->extensions );    // Determine the menu entry's type and call it's handler
             }
         }
         $this->changeLevel(-1);
     }
 
-    public function changeLevel($step)
+    /**
+     * Called on every level change
+     *
+     * @param integer $level
+     * @return boolean
+     */
+    public function changeLevel($level)
     {
         return true;
     }
@@ -227,31 +150,40 @@ class XmapDisplayer
         return $this->count;
     }
 
+    /**
+     * @todo refactor
+     */
     public function getExcludedItems()
     {
         static $_excluded_items;
         if (!isset($_excluded_items)) {
             $_excluded_items = array();
-            $registry = new JRegistry('_default');
+            $registry = new Registry;
             $registry->loadString($this->sitemap->excluded_items);
             $_excluded_items = $registry->toArray();
         }
         return $_excluded_items;
     }
 
+    /**
+     * @todo refactor
+     */
     public function isExcluded($itemid, $uid)
     {
         $excludedItems = $this->getExcludedItems();
-        $items = NULL;
+        $items = null;
+
         if (!empty($excludedItems[$itemid])) {
             if (is_object($excludedItems[$itemid])) {
                 $excludedItems[$itemid] = (array)$excludedItems[$itemid];
             }
             $items =& $excludedItems[$itemid];
         }
+
         if (!$items) {
             return false;
         }
-        return (in_array($uid, $items));
+
+        return in_array($uid, $items);
     }
 }

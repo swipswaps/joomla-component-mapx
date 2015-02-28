@@ -12,6 +12,7 @@ defined('_JEXEC') or die;
 // TODO should be instanceof JComponentRouterBase
 class XmapRoute
 {
+    protected static $lookup = null;
 
     public static function sitemap($id, $view = 'html')
     {
@@ -29,15 +30,14 @@ class XmapRoute
         return $link;
     }
 
-
     protected static function _findItemId($needles)
     {
         // Prepare the reverse lookup array.
-        if (self::$lookup === null) {
+        if (is_null(self::$lookup)) {
             self::$lookup = array();
 
-            $component = &JComponentHelper::getComponent('com_xmap');
-            $menus = &JApplication::getMenu('site', array());
+            $component = JComponentHelper::getComponent('com_xmap');
+            $menus = JFactory::getApplication()->getMenu();
             $items = $menus->getItems('component_id', $component->id);
 
             foreach ($items as &$item) {
