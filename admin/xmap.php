@@ -9,8 +9,6 @@
 
 defined('_JEXEC') or die;
 
-domix::err();
-
 if (!JFactory::getUser()->authorise('core.manage', 'com_xmap')) {
     return JFactory::getApplication()->enqueueMessage(JText::_('JERROR_ALERTNOAUTHOR'), 'error');
 }
