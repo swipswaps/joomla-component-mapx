@@ -9,7 +9,7 @@
 
 defined('_JEXEC') or die;
 
-class XmapControllerAjax extends JControllerLegacy
+class XmapControllerSitemap extends JControllerLegacy
 {
     public function editElement()
     {

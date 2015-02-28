@@ -27,7 +27,7 @@ if ($this->canEdit) {
                     data: {
                         option: 'com_xmap',
                         format: 'json',
-                        task: 'ajax.editElement',
+                        task: 'sitemap.editElement',
                         action: 'toggleElement',
                         id: $this.data('id'),
                         uid: $this.data('uid'),

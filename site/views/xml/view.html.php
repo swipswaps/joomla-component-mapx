@@ -57,8 +57,6 @@ class XmapViewXml extends JViewLegacy
 
         $input = JFactory::getApplication()->input;
 
-        $this->user = JFactory::getUser();
-
         // Check for errors.
         if (count($errors = $this->get('Errors'))) {
             JError::raiseWarning(500, implode("\n", $errors));
