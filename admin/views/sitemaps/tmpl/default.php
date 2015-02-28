@@ -135,21 +135,26 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                                 </div>
                             </td>
                             <td class="title">
-                                <?php if ($canEdit || $canEditOwn) : ?>
-                                    <a href="<?php echo JRoute::_('index.php?option=com_xmap&task=sitemap.edit&id=' . $item->id); ?>" title="<?php echo JText::_('JACTION_EDIT'); ?>">
-                                        <?php echo $this->escape($item->title); ?>
-                                    </a>
-                                <?php else : ?>
-                                    <span title="<?php echo JText::sprintf('JFIELD_ALIAS_LABEL', $this->escape($item->alias)); ?>"><?php echo $this->escape($item->title); ?></span>
-                                <?php endif; ?>
+                                <div class="pull-left">
+                                    <?php if ($canEdit || $canEditOwn) : ?>
+                                        <a href="<?php echo JRoute::_('index.php?option=com_xmap&task=sitemap.edit&id=' . $item->id); ?>" title="<?php echo JText::_('JACTION_EDIT'); ?>">
+                                            <?php echo $this->escape($item->title); ?>
+                                        </a>
+                                    <?php else : ?>
+                                        <span title="<?php echo JText::sprintf('JFIELD_ALIAS_LABEL', $this->escape($item->alias)); ?>"><?php echo $this->escape($item->title); ?></span>
+                                    <?php endif; ?>
+                                    <br />
+                                    <small><?php echo JText::sprintf('JGLOBAL_LIST_ALIAS', $this->escape($item->alias));?></small>
+                                </div>
 
                                 <?php if ($item->published): ?>
-                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_XML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_XML_LINK'); ?></a>]</small>
-                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_NEWS_LINK'); ?></a>]</small>
-                                    <small>[<a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;images=1&amp;id=' . $item->id; ?>" target="_blank" title="<?php echo JText::_('COM_XMAP_IMAGES_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_IMAGES_LINK'); ?></a>]</small>
+                                    <div class="pull-right">
+                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=html&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-success hasTooltip" title="<?php echo JText::_('COM_XMAP_HTML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_HTML_LINK'); ?></a>
+                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-primary hasTooltip" title="<?php echo JText::_('COM_XMAP_XML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_XML_LINK'); ?></a>
+                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-success hasTooltip" title="<?php echo JText::_('COM_XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_NEWS_LINK'); ?></a>
+                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;images=1&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-success hasTooltip" title="<?php echo JText::_('COM_XMAP_IMAGES_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_IMAGES_LINK'); ?></a>
+                                    </div>
                                 <?php endif; ?>
-                                <br />
-                                <small><?php echo JText::sprintf('JGLOBAL_LIST_ALIAS', $this->escape($item->alias));?></small>
                             </td>
                             <td class="center hidden-phone">
                                 <?php echo $this->escape($item->access_level); ?>

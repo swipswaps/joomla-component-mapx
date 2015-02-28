@@ -55,7 +55,7 @@ class XmapViewSitemap extends JViewLegacy
         JFactory::getApplication()->input->set('hidemainmenu', true);
         $isNew = ($this->item->id == 0);
 
-        JToolBarHelper::title(JText::_('COM_XMAP_PAGE_' . ($isNew ? 'ADD_SITEMAP' : 'EDIT_SITEMAP')));
+        JToolBarHelper::title(JText::_('COM_XMAP_PAGE_' . ($isNew ? 'ADD_SITEMAP' : 'EDIT_SITEMAP')), 'list');
 
         if ($isNew && $this->canDo->get('core.create')) {
             JToolBarHelper::apply('sitemap.apply', 'JTOOLBAR_APPLY');

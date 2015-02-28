@@ -8,6 +8,8 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\Registry\Registry;
+
 class XmapModelSitemap extends JModelAdmin
 {
     protected $text_prefix = 'COM_XMAP_SITEMAPS';
@@ -21,7 +23,7 @@ class XmapModelSitemap extends JModelAdmin
     {
         $item = parent::getItem($pk);
 
-        $item->selections = new Joomla\Registry\Registry($item->selections);
+        $item->selections = new Registry($item->selections);
         $item->selections = $item->selections->toArray();
 
         return $item;
