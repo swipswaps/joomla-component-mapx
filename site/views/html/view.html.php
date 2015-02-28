@@ -69,9 +69,9 @@ class XmapViewHtml extends JViewLegacy
 
         $this->prepareDocument();
 
-        $this->getModel()->hit($this->displayer->getCount());
-
         parent::display($tpl);
+
+        $this->getModel()->hit($this->displayer->getCount());
     }
 
     protected function prepareDocument()

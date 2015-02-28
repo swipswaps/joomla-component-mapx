@@ -59,16 +59,16 @@ class XmapViewXml extends JViewLegacy
 
         $this->user = JFactory::getUser();
 
-        $web = JApplicationCms::getInstance('site');
-        $web->clearHeaders();
-        $web->setHeader('Content-Type', 'application/xml; charset=UTF-8');
-        $web->sendHeaders();
-
         // Check for errors.
         if (count($errors = $this->get('Errors'))) {
             JError::raiseWarning(500, implode("\n", $errors));
             return false;
         }
+
+        $web = JApplicationCms::getInstance('site');
+        $web->clearHeaders();
+        $web->setHeader('Content-Type', 'application/xml; charset=UTF-8');
+        $web->sendHeaders();
 
         $this->displayer = new XmapDisplayerXml($this->item, $this->items, $this->extensions);
         $this->displayer->displayAsNews($input->getBool('news'));
@@ -76,9 +76,9 @@ class XmapViewXml extends JViewLegacy
         $this->displayer->displayAsVideos($input->getBool('videos'));
         $this->displayer->setSitemapItems($this->sitemapItems);
 
-        $this->getModel()->hit($this->displayer->getCount());
-
         parent::display($tpl);
+
+        $this->getModel()->hit($this->displayer->getCount());
 
         JFactory::getApplication()->close();
     }
