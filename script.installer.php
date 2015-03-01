@@ -13,8 +13,6 @@ class com_xmapInstallerScript
     const JVERSION = 3.4;
 
     /**
-     * @todo remove old updateserver
-     *
      * @return bool
      */
     public function preflight()
@@ -24,21 +22,6 @@ class com_xmapInstallerScript
             JFactory::getApplication()->enqueueMessage(sprintf('You need %s or newer to install this extension', $link), 'error');
 
             return false;
-        }
-
-        $db = JFactory::getDbo();
-
-        $query = $db->getQuery(true)
-            ->delete('#__extensions')
-            ->where($db->quoteName('type') . ' = ' . $db->quote('package'))
-            ->where($db->quoteName('element') . ' = ' . $db->quote('pkg_xmap'));
-
-        $db->setQuery($query);
-
-        try {
-            $db->execute();
-        } catch (RuntimeException $e) {
-            // do nothing
         }
 
         return true;
@@ -128,5 +111,50 @@ class com_xmapInstallerScript
             ->where('e.folder = ' . $db->quote('xmap') . 'OR (e.element = ' . $db->quote('xmap') . ' AND e.folder = ' . $db->quote('system') . ')');
         $db->setQuery($query);
         $db->execute();
+
+        $this->postflightDeletePackage();
+
+        $this->postflightDeleteUpdateserver();
+    }
+
+    /**
+     * delete old package installation set
+     */
+    protected function postflightDeletePackage()
+    {
+        $db = JFactory::getDbo();
+
+        $query = $db->getQuery(true)
+            ->delete('#__extensions')
+            ->where($db->quoteName('type') . ' = ' . $db->quote('package'))
+            ->where($db->quoteName('element') . ' = ' . $db->quote('pkg_xmap'));
+
+        $db->setQuery($query);
+
+        try {
+            $db->execute();
+        } catch (RuntimeException $e) {
+            // do nothing
+        }
+    }
+
+    /**
+     * delete old outdated update server
+     */
+    protected function postflightDeleteUpdateserver()
+    {
+        $db = JFactory::getDbo();
+
+        $query = $db->getQuery(true)
+            ->delete('#__update_sites')
+            ->where($db->quoteName('name') . ' = ' . $db->quote('Xmap Update Site'));
+
+        $db->setQuery($query);
+
+        try {
+            $db->execute();
+        } catch (RuntimeException $e) {
+            // do nothing
+        }
     }
 }
