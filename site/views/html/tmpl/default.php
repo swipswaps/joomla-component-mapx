@@ -20,7 +20,7 @@ defined('_JEXEC') or die;
             </div>
         <?php endif; ?>
 
-        <?php if ($this->item->params->get('showintro', 1) && !empty($this->item->introtex))  : ?>
+        <?php if ($this->item->params->get('showintro', 1) && !empty($this->item->introtext))  : ?>
             <div class="introtext">
                 <?php echo $this->item->introtext; ?>
             </div>
