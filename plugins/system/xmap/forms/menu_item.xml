@@ -40,14 +40,6 @@
                 <option value="1">JYES</option>
                 <option value="0">JNO</option>
             </field>
-            <field name="show_uid" type="radio" class="btn-group" default="1" label="PLG_SYSTEM_XMAP_FIELD_SHOW_UID_LABEL" description="PLG_SYSTEM_XMAP_FIELD_SHOW_UID_DESC">
-                <option value="1">JYES</option>
-                <option value="0">JNO</option>
-            </field>
-            <field name="show_itemid" type="radio" class="btn-group" default="1" label="PLG_SYSTEM_XMAP_FIELD_SHOW_ITEMID_LABEL" description="PLG_SYSTEM_XMAP_FIELD_SHOW_ITEMID_DESC">
-                <option value="1">JYES</option>
-                <option value="0">JNO</option>
-            </field>
         </fieldset>
     </fields>
 </form>

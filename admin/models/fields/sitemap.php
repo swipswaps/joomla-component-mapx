@@ -26,7 +26,7 @@ class JFormFieldSitemap extends JFormFieldList
 
         $options = $db->loadObjectList();
 
-        array_unshift($options, JHtml::_('select.option', '0', JText::_('JSELECT')));
+        array_unshift($options, JHtml::_('select.option', '', JText::_('JSELECT')));
 
         return array_merge(parent::getOptions(), $options);
     }

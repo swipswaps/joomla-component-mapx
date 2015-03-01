@@ -3,10 +3,22 @@
     <layout title="COM_XMAP_SITEMAP_XML_VIEW_DEFAULT_TITLE">
         <message><![CDATA[COM_XMAP_SITEMAP_XML_VIEW_DEFAULT_DESC]]></message>
     </layout>
-    <!-- TODO add news= and images= as optional parameter -->
     <fields name="request">
         <fieldset name="request" addfieldpath="/administrator/components/com_xmap/models/fields">
-            <field name="id" type="sitemap" default="" required="true" label="COM_XMAP_SELECT_AN_SITEMAP" description="COM_XMAP_SELECT_A_SITEMAP" />
+            <field name="id" type="sitemap" default="" clear="flase" filter="integer" required="true" label="COM_XMAP_SELECT_SITEMAP_LABEL" description="COM_XMAP_SELECT_SITEMAP_DESC" />
+            <field name="news" type="radio" default="" clear="true" filter="integer" class="btn-group btn-group-yesno" label="COM_XMAP_XML_AS_NEWS_LABEL" description="COM_XMAP_XML_AS_NEWS_DESC">
+                <option value="">JNO
+                </option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="images" type="radio" default="" clear="true" filter="integer" class="btn-group btn-group-yesno" label="COM_XMAP_XML_AS_IMAGES_LABEL" description="COM_XMAP_XML_AS_IMAGES_DESC">
+                <option value="">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="videos" type="radio" default="" clear="true" filter="integer" class="btn-group btn-group-yesno" label="COM_XMAP_XML_AS_VIDEOS_LABEL" description="COM_XMAP_XML_AS_VIDEOS_DESC">
+                <option value="">JNO</option>
+                <option value="1">JYES</option>
+            </field>
         </fieldset>
     </fields>
 </metadata>

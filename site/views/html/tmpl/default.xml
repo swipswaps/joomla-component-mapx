@@ -5,7 +5,7 @@
     </layout>
     <fields name="request">
         <fieldset name="request" addfieldpath="/administrator/components/com_xmap/models/fields">
-            <field name="id" type="sitemap" default="" required="true" label="COM_XMAP_SELECT_AN_SITEMAP" description="COM_XMAP_SELECT_A_SITEMAP" />
+            <field name="id" type="sitemap" default="" required="true" label="COM_XMAP_SELECT_SITEMAP_LABEL" description="COM_XMAP_SELECT_SITEMAP_DESC" />
         </fieldset>
     </fields>
 </metadata>

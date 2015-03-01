@@ -153,6 +153,7 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                                         <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-primary hasTooltip" title="<?php echo JText::_('COM_XMAP_XML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_XML_LINK'); ?></a>
                                         <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-success hasTooltip" title="<?php echo JText::_('COM_XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_NEWS_LINK'); ?></a>
                                         <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;images=1&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-success hasTooltip" title="<?php echo JText::_('COM_XMAP_IMAGES_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_IMAGES_LINK'); ?></a>
+                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;videos=1&amp;id=' . $item->id; ?>" target="_blank" class="btn-micro btn-success hasTooltip" title="<?php echo JText::_('COM_XMAP_VIDEOS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_VIDEOS_LINK'); ?></a>
                                     </div>
                                 <?php endif; ?>
                             </td>

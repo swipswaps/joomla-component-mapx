@@ -62,7 +62,7 @@ class xmap_com_content
 
 
                 $db->setQuery($query);
-                if (($row = $db->loadObject()) != NULL) {
+                if (($row = $db->loadObject()) != null) {
                     $node->modified = $row->modified;
 
                     // TODO wtf?
@@ -94,7 +94,7 @@ class xmap_com_content
      */
     static function getTree(XmapDisplayer $xmap, $parent, &$params)
     {
-        $db = JFactory::getDBO();
+        $db = JFactory::getDbo();
         $app = JFactory::getApplication();
         $user = JFactory::getUser();
         $result = null;
@@ -259,7 +259,7 @@ class xmap_com_content
      */
     static function expandCategory(XmapDisplayer $xmap, $parent, $catid, &$params, $itemid)
     {
-        $db = JFactory::getDBO();
+        $db = JFactory::getDbo();
 
         $where = array('a.parent_id = ' . $catid . ' AND a.published = 1 AND a.extension=\'com_content\'');
 
@@ -285,7 +285,7 @@ class xmap_com_content
         if (count($items) > 0) {
             $xmap->changeLevel(1);
             foreach ($items as $item) {
-                $node = new stdclass();
+                $node = new stdClass();
                 $node->id = $parent->id;
                 $node->uid = $parent->uid . 'c' . $item->id;
                 $node->browserNav = $parent->browserNav;
@@ -331,7 +331,7 @@ class xmap_com_content
      */
     static function includeCategoryContent(XmapDisplayer $xmap, $parent, $catid, &$params, $Itemid)
     {
-        $db = JFactory::getDBO();
+        $db = JFactory::getDbo();
 
         // We do not do ordering for XML sitemap.
         if ($xmap->view != 'xml') {
@@ -389,7 +389,7 @@ class xmap_com_content
         if (count($items) > 0) {
             $xmap->changeLevel(1);
             foreach ($items as $item) {
-                $node = new stdclass();
+                $node = new stdClass();
                 $node->id = $parent->id;
                 $node->uid = $parent->uid . 'a' . $item->id;
                 $node->browserNav = $parent->browserNav;
