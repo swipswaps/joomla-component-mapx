@@ -11,12 +11,12 @@
     <description>Xmap - Sitemap Generator for Joomla!</description>
     <install folder="admin">
         <sql>
-            <file driver="mysql" charset="utf8">install/install.mysql.utf8.sql</file>
+            <file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
         </sql>
     </install>
     <uninstall>
         <sql>
-            <file driver="mysql" charset="utf8">install/uninstall.mysql.utf8.sql</file>
+            <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
         </sql>
     </uninstall>
     <update>
