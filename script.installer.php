@@ -10,13 +10,10 @@ defined('_JEXEC') or die;
 
 class com_xmapInstallerScript
 {
-    const JVERSION = 3.3;
+    const JVERSION = 3.4;
 
     /**
-     * @todo remove pkg_xmap manifest from previous xmap installations
-     * @todo reduce version numbers from previous integrated third party plugins so the new versions can be installed
      * @return bool
-     * @throws Exception
      */
     public function preflight()
     {
@@ -26,65 +23,83 @@ class com_xmapInstallerScript
 
             return false;
         }
+
+        $db = JFactory::getDbo();
+
+        $query = $db->getQuery(true)
+            ->delete('#__extensions')
+            ->where($db->quoteName('type') . ' = ' . $db->quote('package'))
+            ->where($db->quoteName('element') . ' = ' . $db->quote('pkg_xmap'));
+
+        $db->setQuery($query);
+
+        try {
+            $db->execute();
+        } catch (RuntimeException $e) {
+            // do nothing
+        }
+
+        return true;
     }
 
     /**
-     * @todo add JComponentHelper::isEnabled() for third party plugins!
+     * install all integrated third party plugins and the xmap system plugin
+     *
      * @param JAdapterInstance $adapter
      */
     public function install(JAdapterInstance $adapter)
     {
-        $db = JFactory::getDbo();
+        $path = $adapter->getParent()->getPath('source');
 
-        // list all integrated xmap plugin types
-        $folders = JFolder::folders($adapter->getParent()->getPath('source') . '/plugins/', '.', false, true);
+        $folders = JFolder::folders($path . '/plugins/xmap/');
 
         $plugins = array();
 
-        // put all integrated xmap plugins into one array
-        foreach ($folders as $folder) {
-            $plugins = array_merge($plugins, JFolder::folders($folder, '.', false, true));
+        foreach ($folders as $component) {
+            $plugins[$component] = $path . $component;
         }
 
-        if (!empty($plugins)) {
-            // install every xmap plugin in single steps
-            foreach ($plugins as $plugin) {
+        // install each third party plugin if component installed
+        foreach ($plugins as $component => $plugin) {
+            if (JComponentHelper::isInstalled($component)) {
                 $installer = new JInstaller;
                 $installer->install($plugin);
             }
-
-            // enable all installed xmap plugins
-            $query = $db->getQuery(true)
-                ->update('#__extensions AS e')
-                ->set('e.enabled = ' . $db->quote(1))
-                ->where('e.type = ' . $db->quote('plugin'))
-                ->where('AND (e.folder = ' . $db->quote('xmap') . 'OR (e.element = ' . $db->quote('xmap') . ' AND e.folder = ' . $db->quote('system') . ')');
-            $db->setQuery($query);
-            $db->execute();
         }
+
+        // install xmap system plugin
+        $installer = new JInstaller;
+        $installer->install($path . '/plugins/system/xmap/');
     }
 
+    /**
+     * @param JAdapterInstance $adapter
+     */
     public function update(JAdapterInstance $adapter)
     {
         $this->install($adapter);
     }
 
     /**
-     * @todo test this step
-     * @param JAdapterInstance $adapter
+     * uninstall all installed xmap plugins
+     * @return bool
      */
     public function uninstall(JAdapterInstance $adapter)
     {
         $db = JFactory::getDbo();
 
-        // uninstall all xmap plugins
         $query = $db->getQuery(true)
             ->select('e.extension_id')
             ->from('#__extensions AS e')
             ->where('e.type = ' . $db->Quote('plugin'))
-            ->where('AND (e.folder = ' . $db->quote('xmap') . 'OR (e.element = ' . $db->quote('xmap') . ' AND e.folder = ' . $db->quote('system') . ')');
+            ->where('e.folder = ' . $db->quote('xmap') . 'OR (e.element = ' . $db->quote('xmap') . ' AND e.folder = ' . $db->quote('system') . ')');
         $db->setQuery($query);
-        $plugins = $db->loadColumn();
+
+        try {
+            $plugins = $db->loadColumn();
+        } catch (RuntimeException $e) {
+            return false;
+        }
 
         if (!empty($plugins)) {
             foreach ($plugins as $plugin) {
@@ -92,13 +107,23 @@ class com_xmapInstallerScript
                 $installer->uninstall('plugin', $plugin);
             }
         }
+
+        return true;
     }
 
     /**
-     * @todo did we need this?
+     * enable all installed xmap plugins
      */
     public function postflight()
     {
+        $db = JFactory::getDbo();
 
+        $query = $db->getQuery(true)
+            ->update('#__extensions AS e')
+            ->set('e.enabled = ' . $db->quote(1))
+            ->where('e.type = ' . $db->quote('plugin'))
+            ->where('e.folder = ' . $db->quote('xmap') . 'OR (e.element = ' . $db->quote('xmap') . ' AND e.folder = ' . $db->quote('system') . ')');
+        $db->setQuery($query);
+        $db->execute();
     }
 }
