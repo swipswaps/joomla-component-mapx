@@ -15,6 +15,13 @@ class XmapController extends JControllerLegacy
     {
         $urlparams = array('id' => 'INT', 'itemid' => 'INT', 'uid' => 'CMD', 'action' => 'CMD', 'property' => 'CMD', 'value' => 'CMD');
 
+        $viewName = JFactory::getApplication()->input->getCmd('view');
+        $viewType = JFactory::getDocument()->getType();
+
+        $view = $this->getView($viewName, $viewType);
+
+        $view->setModel($this->getModel('Sitemap'), true);
+
         return parent::display($cachable, $urlparams);
     }
 }

@@ -13,6 +13,8 @@ class com_xmapInstallerScript
     const JVERSION = 3.4;
 
     /**
+     * @todo remove old updateserver
+     *
      * @return bool
      */
     public function preflight()
