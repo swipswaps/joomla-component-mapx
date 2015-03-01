@@ -56,7 +56,7 @@ class com_xmapInstallerScript
         $plugins = array();
 
         foreach ($folders as $component) {
-            $plugins[$component] = $path . $component;
+            $plugins[$component] = $path . '/plugins/xmap/' . $component;
         }
 
         // install each third party plugin if component installed
@@ -68,8 +68,9 @@ class com_xmapInstallerScript
         }
 
         // install xmap system plugin
-        $installer = new JInstaller;
-        $installer->install($path . '/plugins/system/xmap/');
+        // TODO implement plugin features in XmapDisplayerHtml
+        //$installer = new JInstaller;
+        //$installer->install($path . '/plugins/system/xmap/');
     }
 
     /**
