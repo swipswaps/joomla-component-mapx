@@ -158,7 +158,9 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
 
         // mandatory fields in every type of sitemap
         $url = $this->baseXml->addChild('url');
-        $url->addChild('loc', $link);
+
+        // TODO test if JUri::root() at this position correct
+        $url->addChild('loc', rtrim(JUri::root(), '/') . $link);
 
         /**
          * @see https://support.google.com/webmasters/answer/183668
