@@ -12,9 +12,12 @@ defined('_JEXEC') or die;
 JLoader::register('ContentHelperRoute', JPATH_SITE . '/components/com_content/helpers/route.php');
 JLoader::register('ContentHelperQuery', JPATH_SITE . '/components/com_content/helpers/query.php');
 
+use Joomla\Registry\Registry;
+use Joomla\Utilities\ArrayHelper;
+
 class xmap_com_content
 {
-    static function prepareMenuItem($node, &$params)
+    public static function prepareMenuItem($node, &$params)
     {
         $db = JFactory::getDbo();
         $link_query = parse_url($node->link);
@@ -24,16 +27,16 @@ class xmap_com_content
 
         // TODO new JUri()
         parse_str(html_entity_decode($link_query['query']), $link_vars);
-        $view = JArrayHelper::getValue($link_vars, 'view', '');
-        $layout = JArrayHelper::getValue($link_vars, 'layout', '');
-        $id = JArrayHelper::getValue($link_vars, 'id', 0);
+        $view = ArrayHelper::getValue($link_vars, 'view', '');
+        $layout = ArrayHelper::getValue($link_vars, 'layout', '');
+        $id = ArrayHelper::getValue($link_vars, 'id', 0);
 
         //----- Set add_images param
-        $params['add_images'] = JArrayHelper::getValue($params, 'add_images', 0);
+        $params['add_images'] = ArrayHelper::getValue($params, 'add_images', 0);
 
         //----- Set add pagebreaks param
-        $add_pagebreaks = JArrayHelper::getValue($params, 'add_pagebreaks', 1);
-        $params['add_pagebreaks'] = JArrayHelper::getValue($params, 'add_pagebreaks', 1);
+        $add_pagebreaks = ArrayHelper::getValue($params, 'add_pagebreaks', 1);
+        $params['add_pagebreaks'] = ArrayHelper::getValue($params, 'add_pagebreaks', 1);
 
         switch ($view) {
             case 'category':
@@ -68,7 +71,7 @@ class xmap_com_content
                     // TODO wtf?
                     $text = @$item->introtext . @$item->fulltext;
                     if ($params['add_images']) {
-                        $node->images = XmapHelper::getImages($text, JArrayHelper::getValue($params, 'max_images', 1000));
+                        $node->images = XmapHelper::getImages($text, ArrayHelper::getValue($params, 'max_images', 1000));
                     }
 
                     if ($params['add_pagebreaks']) {
@@ -92,7 +95,7 @@ class xmap_com_content
      * @return void
      * @since  1.0
      */
-    static function getTree(XmapDisplayer $xmap, $parent, &$params)
+    public static function getTree(XmapDisplayer $xmap, $parent, &$params)
     {
         $db = JFactory::getDbo();
         $app = JFactory::getApplication();
@@ -104,15 +107,16 @@ class xmap_com_content
             return;
         }
 
+        // TODO new JUri
         parse_str(html_entity_decode($link_query['query']), $link_vars);
-        $view = JArrayHelper::getValue($link_vars, 'view', '');
-        $id = intval(JArrayHelper::getValue($link_vars, 'id', ''));
+        $view = ArrayHelper::getValue($link_vars, 'view', '');
+        $id = intval(ArrayHelper::getValue($link_vars, 'id', ''));
 
         /*         * *
          * Parameters Initialitation
          * */
         //----- Set expand_categories param
-        $expand_categories = JArrayHelper::getValue($params, 'expand_categories', 1);
+        $expand_categories = ArrayHelper::getValue($params, 'expand_categories', 1);
         $expand_categories = ($expand_categories == 1
             || ($expand_categories == 2 && $xmap->view == 'xml')
             || ($expand_categories == 3 && $xmap->view == 'html')
@@ -120,7 +124,7 @@ class xmap_com_content
         $params['expand_categories'] = $expand_categories;
 
         //----- Set expand_featured param
-        $expand_featured = JArrayHelper::getValue($params, 'expand_featured', 1);
+        $expand_featured = ArrayHelper::getValue($params, 'expand_featured', 1);
         $expand_featured = ($expand_featured == 1
             || ($expand_featured == 2 && $xmap->view == 'xml')
             || ($expand_featured == 3 && $xmap->view == 'html')
@@ -128,7 +132,7 @@ class xmap_com_content
         $params['expand_featured'] = $expand_featured;
 
         //----- Set expand_featured param
-        $include_archived = JArrayHelper::getValue($params, 'include_archived', 2);
+        $include_archived = ArrayHelper::getValue($params, 'include_archived', 2);
         $include_archived = ($include_archived == 1
             || ($include_archived == 2 && $xmap->view == 'xml')
             || ($include_archived == 3 && $xmap->view == 'html')
@@ -136,20 +140,20 @@ class xmap_com_content
         $params['include_archived'] = $include_archived;
 
         //----- Set show_unauth param
-        $show_unauth = JArrayHelper::getValue($params, 'show_unauth', 1);
+        $show_unauth = ArrayHelper::getValue($params, 'show_unauth', 1);
         $show_unauth = ($show_unauth == 1
             || ($show_unauth == 2 && $xmap->view == 'xml')
             || ($show_unauth == 3 && $xmap->view == 'html'));
         $params['show_unauth'] = $show_unauth;
 
         //----- Set add_images param
-        $add_images = JArrayHelper::getValue($params, 'add_images', 0) && $xmap->isImages;
+        $add_images = ArrayHelper::getValue($params, 'add_images', 0) && $xmap->isImages;
         $add_images = ($add_images && $xmap->view == 'xml');
         $params['add_images'] = $add_images;
-        $params['max_images'] = JArrayHelper::getValue($params, 'max_images', 1000);
+        $params['max_images'] = ArrayHelper::getValue($params, 'max_images', 1000);
 
         //----- Set add pagebreaks param
-        $add_pagebreaks = JArrayHelper::getValue($params, 'add_pagebreaks', 1);
+        $add_pagebreaks = ArrayHelper::getValue($params, 'add_pagebreaks', 1);
         $add_pagebreaks = ($add_pagebreaks == 1
             || ($add_pagebreaks == 2 && $xmap->view == 'xml')
             || ($add_pagebreaks == 3 && $xmap->view == 'html')
@@ -163,8 +167,8 @@ class xmap_com_content
         }
 
         //----- Set cat_priority and cat_changefreq params
-        $priority = JArrayHelper::getValue($params, 'cat_priority', $parent->priority);
-        $changefreq = JArrayHelper::getValue($params, 'cat_changefreq', $parent->changefreq);
+        $priority = ArrayHelper::getValue($params, 'cat_priority', $parent->priority);
+        $changefreq = ArrayHelper::getValue($params, 'cat_changefreq', $parent->changefreq);
         if ($priority == '-1')
             $priority = $parent->priority;
         if ($changefreq == '-1')
@@ -174,8 +178,8 @@ class xmap_com_content
         $params['cat_changefreq'] = $changefreq;
 
         //----- Set art_priority and art_changefreq params
-        $priority = JArrayHelper::getValue($params, 'art_priority', $parent->priority);
-        $changefreq = JArrayHelper::getValue($params, 'art_changefreq', $parent->changefreq);
+        $priority = ArrayHelper::getValue($params, 'art_priority', $parent->priority);
+        $changefreq = ArrayHelper::getValue($params, 'art_changefreq', $parent->changefreq);
         if ($priority == '-1')
             $priority = $parent->priority;
         if ($changefreq == '-1')
@@ -184,8 +188,8 @@ class xmap_com_content
         $params['art_priority'] = $priority;
         $params['art_changefreq'] = $changefreq;
 
-        $params['max_art'] = intval(JArrayHelper::getValue($params, 'max_art', 0));
-        $params['max_art_age'] = intval(JArrayHelper::getValue($params, 'max_art_age', 0));
+        $params['max_art'] = ArrayHelper::getValue($params, 'max_art', 0, 'int');
+        $params['max_art_age'] = ArrayHelper::getValue($params, 'max_art_age', 0, 'int');
 
         $params['nullDate'] = $db->Quote($db->getNullDate());
 
@@ -198,7 +202,7 @@ class xmap_com_content
         switch ($view) {
             case 'category':
                 if (!$id) {
-                    $id = intval(JArrayHelper::getValue($params, 'id', 0));
+                    $id = ArrayHelper::getValue($params, 'id', 0, 'int');
                 }
                 if ($params['expand_categories'] && $id) {
                     $result = self::expandCategory($xmap, $parent, $id, $params, $parent->id);
@@ -257,7 +261,7 @@ class xmap_com_content
      * @param int $itemid the itemid to use for this category's children
      * @return bool
      */
-    static function expandCategory(XmapDisplayer $xmap, $parent, $catid, &$params, $itemid)
+    protected static function expandCategory(XmapDisplayer $xmap, $parent, $catid, &$params, $itemid)
     {
         $db = JFactory::getDbo();
 
@@ -271,6 +275,7 @@ class xmap_com_content
             $where[] = 'a.access IN (' . $params['groups'] . ') ';
         }
 
+        // TODO use JDatabaseQuery
         $orderby = 'a.lft';
         $query = 'SELECT a.id, a.title, a.alias, a.access, a.path AS route, '
             . 'a.created_time created, a.modified_time modified '
@@ -279,7 +284,6 @@ class xmap_com_content
             . ($xmap->view != 'xml' ? "\n ORDER BY " . $orderby . "" : '');
 
         $db->setQuery($query);
-        #echo nl2br(str_replace('#__','jos_',$db->getQuery()));exit;
         $items = $db->loadObjectList();
 
         if (count($items) > 0) {
@@ -329,7 +333,7 @@ class xmap_com_content
      *
      * @since 2.0
      */
-    static function includeCategoryContent(XmapDisplayer $xmap, $parent, $catid, &$params, $Itemid)
+    protected static function includeCategoryContent(XmapDisplayer $xmap, $parent, $catid, &$params, $Itemid)
     {
         $db = JFactory::getDbo();
 
@@ -368,6 +372,7 @@ class xmap_com_content
             $where[] = 'a.access IN (' . $params['groups'] . ') ';
         }
 
+        // TODO use JDatabaseQuery
         $query = 'SELECT a.id, a.title, a.alias, a.catid, '
             . 'a.created created, a.modified modified'
             . ',a.language'
@@ -383,7 +388,6 @@ class xmap_com_content
             . ($params['max_art'] ? "\n LIMIT {$params['max_art']}" : '');
 
         $db->setQuery($query);
-        //echo nl2br(str_replace('#__','mgbj2_',$db->getQuery()));
         $items = $db->loadObjectList();
 
         if (count($items) > 0) {
@@ -414,12 +418,14 @@ class xmap_com_content
                 $node->catslug = $item->catid;
                 $node->link = ContentHelperRoute::getArticleRoute($node->slug, $node->catslug);
 
+                // TODO use images attached to article
                 // Add images to the article
                 $text = @$item->introtext . @$item->fulltext;
                 if ($params['add_images']) {
                     $node->images = XmapHelper::getImages($text, $params['max_images']);
                 }
 
+                // TODO wtf is this?
                 if ($params['add_pagebreaks']) {
                     $subnodes = XmapHelper::getPagebreaks($text, $node->link);
                     $node->expandible = (count($subnodes) > 0); // This article has children
@@ -434,7 +440,7 @@ class xmap_com_content
         return true;
     }
 
-    static private function printNodes(XmapDisplayer $xmap, $parent, &$params, &$subnodes)
+    protected static function printNodes(XmapDisplayer $xmap, $parent, &$params, &$subnodes)
     {
         $xmap->changeLevel(1);
         $i = 0;
@@ -456,12 +462,12 @@ class xmap_com_content
      * menu/component/user settings. It checks if the current user
      * has already changed the article's ordering column in the frontend
      *
-     * @param JRegistry $params
+     * @param Registry $params
      * @param int $parentId
      * @param int $itemid
      * @return string
      */
-    static function buildContentOrderBy(&$params, $parentId, $itemid)
+    protected static function buildContentOrderBy(&$params, $parentId, $itemid)
     {
         $app = JFactory::getApplication('site');
 
@@ -470,7 +476,7 @@ class xmap_com_content
             $menu = $app->getMenu();
             $item = $menu->getItem($itemid);
             $menuParams = clone($params);
-            $itemParams = new JRegistry($item->params);
+            $itemParams = new Registry($item->params);
             $menuParams->merge($itemParams);
         } else {
             $menuParams =& $params;
