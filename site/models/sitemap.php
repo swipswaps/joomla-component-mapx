@@ -197,6 +197,7 @@ class XmapModelSitemap extends JModelItem
             $state = 0;
         } else {
             if (is_array($excludedItems[$itemid]) && count($excludedItems[$itemid])) {
+                // TODO refactor, create_function is bad
                 $excludedItems[$itemid] = array_filter($excludedItems[$itemid], create_function('$var', 'return ($var != \'' . $uid . '\');'));
             } else {
                 unset($excludedItems[$itemid]);

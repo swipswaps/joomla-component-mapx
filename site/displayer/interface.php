@@ -23,5 +23,5 @@ interface XmapDisplayerInterface
 
 interface XmapDisplayer
 {
-    // for backward compatibility
+    // for backward compatibility (eg. type hinting in plugins)
 }

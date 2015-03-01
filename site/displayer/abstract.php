@@ -155,14 +155,16 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
      */
     public function getExcludedItems()
     {
-        static $_excluded_items;
-        if (!isset($_excluded_items)) {
-            $_excluded_items = array();
+        static $excluded_items;
+
+        if (!isset($excluded_items)) {
+            $excluded_items = array();
             $registry = new Registry;
             $registry->loadString($this->sitemap->excluded_items);
-            $_excluded_items = $registry->toArray();
+            $excluded_items = $registry->toArray();
         }
-        return $_excluded_items;
+
+        return $excluded_items;
     }
 
     /**

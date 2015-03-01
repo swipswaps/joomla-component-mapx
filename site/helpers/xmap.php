@@ -13,9 +13,20 @@ use Joomla\Registry\Registry;
 
 abstract class XmapHelper
 {
+    /**
+     * @var array
+     */
     protected static $extensions = null;
 
+    /**
+     * @var string
+     */
     protected static $languageCode = null;
+
+    /**
+     * @var array
+     */
+    public static $instances = array();
 
     /**
      * there is currently no fu***ing other way to get the short language code in Joomla :(
@@ -164,22 +175,30 @@ abstract class XmapHelper
     /**
      * Call the function prepareMenuItem of the extension for the item (if any)
      *
-     * @param $item JMenu item object
+     * @param $item stdClass
      *
-     * @return void
+     * @return bool
      */
-    public static function prepareMenuItem($item)
+    public static function prepareMenuItem(stdClass $item)
     {
         $extensions = self::getExtensions();
-        if (!empty($extensions[$item->option])) {
-            $className = 'xmap_' . $item->option;
-            $obj = new $className;
-            if (method_exists($obj, 'prepareMenuItem')) {
-                // TODO
-                //call_user_func_array(array($obj, 'prepareMenuItem'), array(&$item, $extensions[$item->option]->params));
-                $obj->prepareMenuItem($item, $extensions[$item->option]->params);
-            }
+        $className = 'xmap_' . $item->option;
+
+        if (empty($extensions[$item->option])) {
+            return false;
         }
+
+        // create only one instance
+        if (!isset(self::$instances[$className])) {
+            self::$instances[$className] = new $className;
+        }
+
+        if (method_exists(self::$instances[$className], 'prepareMenuItem')) {
+            call_user_func_array(array(self::$instances[$className], 'prepareMenuItem'), array(&$item, &$extensions[$item->option]->params));
+            return true;
+        }
+
+        return false;
     }
 
     public static function getImages($text, $max)
@@ -188,7 +207,7 @@ abstract class XmapHelper
         $urlBaseLen = strlen($urlBase);
 
         $images = null;
-        $matches = $matches1 = $matches2 = array();
+        $matches1 = $matches2 = array();
         // Look <img> tags
         preg_match_all('/<img[^>]*?(?:(?:[^>]*src="(?P<src>[^"]+)")|(?:[^>]*alt="(?P<alt>[^"]+)")|(?:[^>]*title="(?P<title>[^"]+)"))+[^>]*>/i', $text, $matches1, PREG_SET_ORDER);
         // Loog for <a> tags with href to images
