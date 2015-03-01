@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension version="3.0" type="plugin" group="system" method="upgrade">
+    <name>PLG_SYSTEM_XMAP</name>
+    <author>Branko Wilhelm</author>
+    <creationDate>Feb 2015</creationDate>
+    <copyright>Copyright (C) 2015 Branko Wilhelm</copyright>
+    <license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
+    <authorEmail>branko.wilhelm@gmail.com</authorEmail>
+    <authorUrl>www.z-index.net</authorUrl>
+    <version>@REVISION@</version>
+    <description>PLG_SYSTEM_XMAP_DESC</description>
+    <files>
+        <filename plugin="xmap">xmap.php</filename>
+        <folder>forms</folder>
+    </files>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/en-GB.plg_system_xmap.ini</language>
+        <language tag="en-GB">en-GB/en-GB.plg_system_xmap.sys.ini</language>
+    </languages>
+</extension>
