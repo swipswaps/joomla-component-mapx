@@ -11,6 +11,8 @@ defined('_JEXEC') or die;
 
 use Joomla\Registry\Registry;
 
+JLoader::import('joomla.filesystem.file');
+
 abstract class XmapHelper
 {
     /**
