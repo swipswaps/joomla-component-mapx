@@ -7,7 +7,7 @@
     <license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
     <authorEmail>guille@vargas.co.cr</authorEmail>
     <authorUrl>joomla.vargas.co.cr</authorUrl>
-    <version>@REVISION@</version>
+    <version>3.0 @REVISION@</version>
     <description>PLG_XMAP_COM_CONTENT_DESC</description>
     <files>
         <filename plugin="com_content">com_content.php</filename>
