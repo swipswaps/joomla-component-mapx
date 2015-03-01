@@ -58,7 +58,7 @@ class XmapModelSitemap extends JModelItem
         }
 
         if (empty($this->_item)) {
-            $this->setError(JText::_('JGLOBAL_RESOURCE_NOT_FOUND'));
+            return JError::raiseError(404, JText::_('COM_XMAP_ERROR_SITEMAP_NOT_FOUND'));
         }
 
         return $this->_item;
