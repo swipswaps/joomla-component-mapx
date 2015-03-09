@@ -11,6 +11,8 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\Utilities\ArrayHelper;
+
 /**
  * Class XmapModelSitemaps
  */
@@ -161,9 +163,22 @@ class XmapModelSitemaps extends JModelList
         return $db->loadColumn();
     }
 
+    /**
+     * @param array $ids integers
+     *
+     * @return bool|array
+     */
     public function getItemsByIds(array $ids)
     {
         $db = JFactory::getDbo();
+
+        $ids = ArrayHelper::toInteger($ids);
+        $ids = array_filter($ids);
+
+        if (empty($ids))
+        {
+            return false;
+        }
 
         $query = $this->getListQuery();
         $query->where('a.id IN(' . implode(',', $ids) . ')');

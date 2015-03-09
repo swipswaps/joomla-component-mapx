@@ -3,8 +3,8 @@
     <name>PLG_XMAP_COM_CONTENT</name>
     <author>Guillermo Vargas</author>
     <creationDate>01/26/2011</creationDate>
-    <copyright>GNU GPL</copyright>
-    <license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
+    <copyright>(c) 2005 - 2009 Joomla! Vargas. All rights reserved; (c) 2015 Branko Wilhelm. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <authorEmail>guille@vargas.co.cr</authorEmail>
     <authorUrl>joomla.vargas.co.cr</authorUrl>
     <version>3.0 @REVISION@</version>
