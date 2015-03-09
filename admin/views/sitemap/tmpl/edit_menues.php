@@ -1,11 +1,12 @@
 <?php
 
 /**
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- *
- * @var        XmapViewSitemap $this
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
@@ -42,7 +43,9 @@ JHtml::_('sortablelist.sortable', 'menueList', 'adminForm', 'asc', false);
                 </span>
             </td>
             <td width="1%" class="center">
-                <input type="checkbox" id="cb<?php echo $i; ?>" name="jform[selections][<?php echo $menu['menutype']; ?>][enabled]" value="1" <?php echo $menu['selected'] ? 'checked="checked"' : ''; ?> />
+                <input type="checkbox" id="cb<?php echo $i; ?>"
+                       name="jform[selections][<?php echo $menu['menutype']; ?>][enabled]"
+                       value="1" <?php echo $menu['selected'] ? 'checked="checked"' : ''; ?> />
             </td>
             <td class="nowrap has-context">
                 <label for="cb<?php echo $i; ?>"><?php echo $this->escape($menu['title']); ?></label>

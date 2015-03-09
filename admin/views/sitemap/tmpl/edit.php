@@ -1,11 +1,12 @@
 <?php
 
 /**
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- *
- * @var        XmapViewSitemap $this
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
@@ -22,7 +23,8 @@ JHtml::_('formbehavior.chosen', 'select');
         }
     }
 </script>
-<form action="<?php echo JRoute::_('index.php?option=com_xmap&layout=edit&id=' . $this->item->id); ?>" method="post" name="adminForm" id="sitemap-form" class="form-validate">
+<form action="<?php echo JRoute::_('index.php?option=com_xmap&layout=edit&id=' . $this->item->id); ?>" method="post"
+      name="adminForm" id="sitemap-form" class="form-validate">
 
     <?php echo JLayoutHelper::render('joomla.edit.title_alias', $this); ?>
 
@@ -68,7 +70,7 @@ JHtml::_('formbehavior.chosen', 'select');
 
         <?php echo JHtml::_('bootstrap.endTabSet'); ?>
 
-        <input type="hidden" name="task" value="" />
+        <input type="hidden" name="task" value=""/>
         <?php echo JHtml::_('form.token'); ?>
     </div>
 </form>

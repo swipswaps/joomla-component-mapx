@@ -1,16 +1,21 @@
 <?php
 
 /**
- * @author     Guillermo Vargas <guille@vargas.co.cr>
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
 use Joomla\Registry\Registry;
 
+/**
+ * Class XmapDisplayerHtml
+ */
 class XmapDisplayerHtml extends XmapDisplayerAbstract
 {
     /**
@@ -58,12 +63,18 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
      */
     protected $canEdit = false;
 
+    /**
+     * @param stdClass $sitemap
+     * @param array $items
+     * @param array $extensions
+     */
     public function __construct(stdClass $sitemap, array &$items, array &$extensions)
     {
         parent::__construct($sitemap, $items, $extensions);
 
         $columns = $this->sitemap->params->get('columns', 0);
-        if ($columns > 1) { // calculate column widths
+        if ($columns > 1)
+        { // calculate column widths
             $total = count($this->items);
             $columns = $total < $columns ? $total : $columns;
             $this->width = (100 / $columns) - 1;
@@ -71,9 +82,13 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
         }
     }
 
+    /**
+     * @return string
+     */
     public function printSitemap()
     {
-        foreach ($this->items as $menutype => &$items) {
+        foreach ($this->items as $menutype => &$items)
+        {
 
             $node = new stdClass;
             $node->uid = 'menu-' . $menutype;
@@ -94,16 +109,23 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
         return $this->output;
     }
 
+    /**
+     * @param stdClass $node
+     *
+     * @return bool
+     */
     function printNode(stdClass $node)
     {
         $out = '';
 
-        if ($this->isExcluded($node->id, $node->uid) && !$this->canEdit) {
+        if ($this->isExcluded($node->id, $node->uid) && !$this->canEdit)
+        {
             return false;
         }
 
         // To avoid duplicate children in the same parent
-        if (!empty($this->parent_children[$this->level][$node->uid])) {
+        if (!empty($this->parent_children[$this->level][$node->uid]))
+        {
             return false;
         }
 
@@ -118,15 +140,18 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
         if (!isset($node->browserNav))
             $node->browserNav = 0;
 
-        if ($node->browserNav != 3) {
+        if ($node->browserNav != 3)
+        {
             $link = JRoute::_($node->link, true, @$node->secure);
-        } else {
+        } else
+        {
             $link = $node->link;
         }
 
         $attributes = array('title' => $node->name);
 
-        switch ($node->browserNav) {
+        switch ($node->browserNav)
+        {
             case 1: // open url in new window
             case 2: // open url in javascript popup window
                 $attributes['target'] = '_blank';
@@ -147,11 +172,14 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
 
         $this->output .= $out;
 
-        if ($this->canEdit) {
-            if ($this->isExcluded($node->id, $node->uid)) {
+        if ($this->canEdit)
+        {
+            if ($this->isExcluded($node->id, $node->uid))
+            {
                 $title = JText::_('JUNPUBLISHED');
                 $class = 'icon-remove-sign';
-            } else {
+            } else
+            {
                 $class = 'icon-ok-sign';
                 $title = JText::_('JPUBLISHED');
             }
@@ -164,9 +192,15 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
         return true;
     }
 
+    /**
+     * @param int $level
+     *
+     * @return void
+     */
     public function changeLevel($level)
     {
-        if ($level > 0) {
+        if ($level > 0)
+        {
             # We do not print start ul here to avoid empty list, it's printed at the first child
             $this->level += $level;
             $this->childs[$this->level] = 0;
@@ -179,12 +213,15 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
                 empty ($this->last_child[$this->level - 1])
                 || empty ($this->parent_children[$this->level]['parent'])
                 || $this->parent_children[$this->level]['parent'] != $this->last_child[$this->level - 1]
-            ) {
+            )
+            {
                 $this->parent_children[$this->level] = array();
                 $this->parent_children[$this->level]['parent'] = @$this->last_child[$this->level - 1];
             }
-        } else {
-            if ($this->childs[$this->level]) {
+        } else
+        {
+            if ($this->childs[$this->level])
+            {
                 $this->output .= $this->closeItem . '</ul>' . PHP_EOL;
             }
 
@@ -198,15 +235,18 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
      * Function called before displaying the menu
      *
      * @param stdClass $node The menu node item
+     *
      * @return boolean
      */
     protected function startMenu(stdClass $node)
     {
-        if ($this->sitemap->params->get('columns') > 1) {
+        if ($this->sitemap->params->get('columns') > 1)
+        {
             $this->output .= '<div style="float:left;width:' . $this->width . '%;">' . PHP_EOL;
         }
 
-        if ($this->sitemap->params->get('show_menutitle')) {
+        if ($this->sitemap->params->get('show_menutitle'))
+        {
             $this->output .= '<h2 class="menutitle">' . $node->name . '</h2>' . PHP_EOL;
         }
     }
@@ -215,12 +255,14 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
      * Function called after displaying the menu
      *
      * @param stdClass $node The menu node item
+     *
      * @return boolean
      */
     protected function endMenu(stdClass $node)
     {
         $this->closeItem = '';
-        if ($this->sitemap->params->get('columns') > 1) {
+        if ($this->sitemap->params->get('columns') > 1)
+        {
             $this->output .= '</div>' . PHP_EOL;
         }
     }
@@ -233,11 +275,18 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
         $this->canEdit = (bool)$val;
     }
 
+    /**
+     * @param string $menutype
+     *
+     * @return null|string
+     * @throws Exception
+     */
     protected function getMenuTitle($menutype)
     {
         static $modules = null;
 
-        if (is_null($modules)) {
+        if (is_null($modules))
+        {
             /** @var JApplicationSite $app */
             $app = JFactory::getApplication();
             $db = JFactory::getDbo();
@@ -253,7 +302,8 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
                 ->where('m.client_id = ' . $db->quote(0))
                 ->where('m.access IN(' . $db->quote(implode(',', $user->getAuthorisedViewLevels())) . ')');
 
-            if ($app->getLanguageFilter()) {
+            if ($app->getLanguageFilter())
+            {
                 $query->where('m.language IN(' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
             }
 
@@ -261,8 +311,10 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
 
             $result = $db->loadObjectList();
 
-            if (!empty($result)) {
-                foreach ($result as $module) {
+            if (!empty($result))
+            {
+                foreach ($result as $module)
+                {
                     $module->params = new Registry($module->params);
                     $module->menutype = $module->params->get('menutype');
                     $modules[$module->menutype] = $module;
@@ -270,7 +322,8 @@ class XmapDisplayerHtml extends XmapDisplayerAbstract
             }
         }
 
-        if (isset($modules[$menutype])) {
+        if (isset($modules[$menutype]))
+        {
             return $modules[$menutype]->title;
         }
 

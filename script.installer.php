@@ -1,15 +1,24 @@
 <?php
 
 /**
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
+/**
+ * Class com_xmapInstallerScript
+ */
 class com_xmapInstallerScript
 {
+    /**
+     * required Joomla! version
+     */
     const JVERSION = 3.4;
 
     /**
@@ -17,7 +26,8 @@ class com_xmapInstallerScript
      */
     public function preflight()
     {
-        if (!version_compare(JVERSION, self::JVERSION, '>=')) {
+        if (!version_compare(JVERSION, self::JVERSION, '>='))
+        {
             $link = JHtml::_('link', 'index.php?option=com_joomlaupdate', 'Joomla! ' . self::JVERSION);
             JFactory::getApplication()->enqueueMessage(sprintf('You need %s or newer to install this extension', $link), 'error');
 
@@ -40,13 +50,16 @@ class com_xmapInstallerScript
 
         $plugins = array();
 
-        foreach ($folders as $component) {
+        foreach ($folders as $component)
+        {
             $plugins[$component] = $path . '/plugins/xmap/' . $component;
         }
 
         // install each third party plugin if component installed
-        foreach ($plugins as $component => $plugin) {
-            if (JComponentHelper::isInstalled($component)) {
+        foreach ($plugins as $component => $plugin)
+        {
+            if (JComponentHelper::isInstalled($component))
+            {
                 $installer = new JInstaller;
                 $installer->install($plugin);
             }
@@ -81,14 +94,18 @@ class com_xmapInstallerScript
             ->where('e.folder = ' . $db->quote('xmap') . 'OR (e.element = ' . $db->quote('xmap') . ' AND e.folder = ' . $db->quote('system') . ')');
         $db->setQuery($query);
 
-        try {
+        try
+        {
             $plugins = $db->loadColumn();
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException $e)
+        {
             return false;
         }
 
-        if (!empty($plugins)) {
-            foreach ($plugins as $plugin) {
+        if (!empty($plugins))
+        {
+            foreach ($plugins as $plugin)
+            {
                 $installer = new JInstaller;
                 $installer->uninstall('plugin', $plugin);
             }
@@ -131,9 +148,11 @@ class com_xmapInstallerScript
 
         $db->setQuery($query);
 
-        try {
+        try
+        {
             $db->execute();
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException $e)
+        {
             // do nothing
         }
     }
@@ -151,9 +170,11 @@ class com_xmapInstallerScript
 
         $db->setQuery($query);
 
-        try {
+        try
+        {
             $db->execute();
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException $e)
+        {
             // do nothing
         }
     }

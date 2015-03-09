@@ -1,16 +1,21 @@
 <?php
 
 /**
- * @author     Guillermo Vargas <guille@vargas.co.cr>
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
 use Joomla\Registry\Registry;
 
+/**
+ * Class XmapDisplayerAbstract
+ */
 abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisplayer
 {
     /**
@@ -44,10 +49,30 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
     protected $output = '';
 
     /**
+     * @var bool
+     */
+    protected $isNews = false;
+
+    /**
+     * @var bool
+     */
+    protected $isImages = false;
+
+    /**
+     * @var bool
+     */
+    protected $isVideos = false;
+
+    /**
      * @var Joomla\Registry\Registry
      */
     protected $params = null;
 
+    /**
+     * @param stdClass $sitemap
+     * @param array $items
+     * @param array $extensions
+     */
     public function __construct(stdClass $sitemap, array &$items, array &$extensions)
     {
         $this->sitemap = $sitemap;
@@ -57,8 +82,13 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
         $this->params = JComponentHelper::getParams('com_xmap');
     }
 
+
     /**
      * @todo refactor
+     *
+     * @param array $items
+     *
+     * @throws Exception
      */
     protected function printMenuTree(array &$items)
     {
@@ -66,7 +96,8 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
 
         $router = JFactory::getApplication()->getRouter();
 
-        foreach ($items as $i => $item) {                   // Add each menu entry to the root tree.
+        foreach ($items as $i => $item)
+        {                   // Add each menu entry to the root tree.
             $excludeExternal = false;
 
             $node = new stdClass;
@@ -89,20 +120,24 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
             // New on Xmap 2.0: send the menu params
             $node->params =& $item->params;
 
-            if ($node->home == 1) {
+            if ($node->home == 1)
+            {
                 // Correct the URL for the home page.
                 $node->link = JURI::base();
             }
-            switch ($item->type) {
+            switch ($item->type)
+            {
                 case 'separator':
                 case 'heading':
                     $node->browserNav = 3;
                     break;
                 case 'url':
-                    if ((strpos($item->link, 'index.php?') === 0) && (strpos($item->link, 'Itemid=') === false)) {
+                    if ((strpos($item->link, 'index.php?') === 0) && (strpos($item->link, 'Itemid=') === false))
+                    {
                         // If this is an internal Joomla link, ensure the Itemid is set.
                         $node->link = $node->link . '&Itemid=' . $node->id;
-                    } else {
+                    } else
+                    {
                         $excludeExternal = ($this->view == 'xml');
                     }
                     break;
@@ -111,21 +146,25 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
                     $node->link = 'index.php?Itemid=' . $item->params->get('aliasoptions');
                     break;
                 default:
-                    if ($router->getMode() == JROUTER_MODE_SEF) {
+                    if ($router->getMode() == JROUTER_MODE_SEF)
+                    {
                         $node->link = 'index.php?Itemid=' . $node->id;
-                    } elseif (!$node->home) {
+                    } elseif (!$node->home)
+                    {
                         $node->link .= '&Itemid=' . $node->id;
                     }
                     break;
             }
 
-            if ($excludeExternal || $this->printNode($node)) {
+            if ($excludeExternal || $this->printNode($node))
+            {
 
                 //Restore the original link
                 $node->link = $item->link;
                 $this->printMenuTree($item->items);
 
-                if (isset($node->option) && !empty($this->extensions[$node->option])) {
+                if (isset($node->option) && !empty($this->extensions[$node->option]))
+                {
                     $node->uid = $node->option;
                     call_user_func_array(array('xmap_' . $node->option, 'getTree'), array(&$this, &$node, &$this->extensions[$node->option]->params));
                 }
@@ -138,6 +177,7 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
      * Called on every level change
      *
      * @param integer $level
+     *
      * @return boolean
      */
     public function changeLevel($level)
@@ -145,6 +185,9 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
         return true;
     }
 
+    /**
+     * @return int
+     */
     public function getCount()
     {
         return $this->count;
@@ -152,12 +195,15 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
 
     /**
      * @todo refactor
+     *
+     * @return array
      */
     public function getExcludedItems()
     {
         static $excluded_items;
 
-        if (!isset($excluded_items)) {
+        if (!isset($excluded_items))
+        {
             $excluded_items = array();
             $registry = new Registry;
             $registry->loadString($this->sitemap->excluded_items);
@@ -169,23 +215,46 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
 
     /**
      * @todo refactor
+     *
+     * @param $itemid
+     * @param $uid
+     *
+     * @return bool
      */
     public function isExcluded($itemid, $uid)
     {
         $excludedItems = $this->getExcludedItems();
         $items = null;
 
-        if (!empty($excludedItems[$itemid])) {
-            if (is_object($excludedItems[$itemid])) {
+        if (!empty($excludedItems[$itemid]))
+        {
+            if (is_object($excludedItems[$itemid]))
+            {
                 $excludedItems[$itemid] = (array)$excludedItems[$itemid];
             }
             $items =& $excludedItems[$itemid];
         }
 
-        if (!$items) {
+        if (!$items)
+        {
             return false;
         }
 
         return in_array($uid, $items);
+    }
+
+    /**
+     * @param $var
+     *
+     * @return mixed
+     */
+    public function __get($var)
+    {
+        if (!in_array($var, array('isNews', 'isImages', 'isVideos')))
+        {
+            throw new InvalidArgumentException();
+        }
+
+        return $this->$var;
     }
 }

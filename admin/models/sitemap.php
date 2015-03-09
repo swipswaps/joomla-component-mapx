@@ -1,9 +1,12 @@
 <?php
 
 /**
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
@@ -32,7 +35,8 @@ class XmapModelSitemap extends JModelAdmin
     public function getForm($data = array(), $loadData = true)
     {
         $form = $this->loadForm('com_xmap.sitemap', 'sitemap', array('control' => 'jform', 'load_data' => $loadData));
-        if (empty($form)) {
+        if (empty($form))
+        {
             return false;
         }
 
@@ -44,7 +48,8 @@ class XmapModelSitemap extends JModelAdmin
     {
         $data = JFactory::getApplication()->getUserState('com_xmap.edit.sitemap.data', array());
 
-        if (empty($data)) {
+        if (empty($data))
+        {
             $data = $this->getItem();
         }
 

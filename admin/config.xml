@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
+    <fieldset name="ping" label="COM_XMAP_CONFIG_PING_LABEL" description="COM_XMAP_CONFIG_PING_DESC">
+        <field name="ping_google" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_XMAP_CONFIG_PING_GOOGLE_LABEL">
+            <option value="1">JYES</option>
+            <option value="0">JNO</option>
+        </field>
+        <field name="ping_bing" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_XMAP_CONFIG_PING_BING_LABEL">
+            <option value="1">JYES</option>
+            <option value="0">JNO</option>
+        </field>
+    </fieldset>
     <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL" description="JCONFIG_PERMISSIONS_DESC">
         <field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" validate="rules" filter="rules" component="com_xmap" section="component" />
     </fieldset>

@@ -1,14 +1,19 @@
 <?php
 
 /**
- * @author     Guillermo Vargas <guille@vargas.co.cr>
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
+/**
+ * Class XmapDisplayerXml
+ */
 class XmapDisplayerXml extends XmapDisplayerAbstract
 {
     /**
@@ -20,21 +25,6 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
      * @var array
      */
     protected $links = array();
-
-    /**
-     * @var bool
-     */
-    protected $isNews = false;
-
-    /**
-     * @var bool
-     */
-    protected $isImages = false;
-
-    /**
-     * @var bool
-     */
-    protected $isVideos = false;
 
     /**
      * @var array
@@ -51,40 +41,59 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
      */
     protected $defaultLanguage = '*';
 
+    /**
+     * @param stdClass $sitemap
+     * @param array $items
+     * @param array $extensions
+     */
     public function __construct(stdClass $sitemap, array &$items, array &$extensions)
     {
         parent::__construct($sitemap, $items, $extensions);
 
         $languageTag = JFactory::getLanguage()->getTag();
 
-        if (in_array($languageTag, array('zh-cn', 'zh-tw'))) {
+        if (in_array($languageTag, array('zh-cn', 'zh-tw')))
+        {
             $this->defaultLanguage = $languageTag;
-        } else {
+        } else
+        {
             $this->defaultLanguage = XmapHelper::getLanguageCode();
         }
     }
 
+    /**
+     * define base xml tree
+     *
+     * return void
+     */
     protected function setBaseXml()
     {
         $this->baseXml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
         $this->baseXml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
-        if ($this->isType('news')) {
+        if ($this->isType('news'))
+        {
             $this->baseXml->addAttribute('xmlns:xmlns:news', 'http://www.google.com/schemas/sitemap-news/0.9');
         }
 
-        if ($this->isType('images')) {
+        if ($this->isType('images'))
+        {
             $this->baseXml->addAttribute('xmlns:xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
         }
 
-        if ($this->isType('videos')) {
+        if ($this->isType('videos'))
+        {
             $this->baseXml->addAttribute('xmlns:xmlns:video', 'http://www.google.com/schemas/sitemap-video/1.1');
         }
     }
 
+    /**
+     * @return string
+     */
     public function printSitemap()
     {
-        foreach ($this->items as $menutype => &$items) {
+        foreach ($this->items as $menutype => &$items)
+        {
             $this->printMenuTree($items);
         }
         $dom = new DomDocument();
@@ -100,57 +109,75 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
      * Prints an XML node for the sitemap
      *
      * @param stdClass $node
+     *
      * @return bool
      */
     public function printNode(stdClass $node)
     {
-        if (is_null($this->baseXml)) {
+        if (is_null($this->baseXml))
+        {
             $this->setBaseXml();
         }
 
-        if ($this->isExcluded($node->id, $node->uid)) {
+        if ($this->isExcluded($node->id, $node->uid))
+        {
             return false;
         }
 
-        if ($this->isType('news') && (!isset($node->newsItem) || !$node->newsItem)) {
+        if ($this->isType('news') && (!isset($node->newsItem) || !$node->newsItem))
+        {
             return false;
         }
 
-        if ($this->isType('images') && (!isset($node->images) || empty($node->images))) {
+        if ($this->isType('images') && (!isset($node->images) || empty($node->images)))
+        {
             return false;
         }
 
-        if ($this->isType('videos') && (!isset($node->videos) || empty($node->videos))) {
+        if ($this->isType('videos') && (!isset($node->videos) || empty($node->videos)))
+        {
             return false;
         }
 
-        if (!isset($node->browserNav)) {
+        if (!isset($node->browserNav))
+        {
             $node->browserNav = 0;
         }
 
-        if ($node->browserNav == 3) {
+        if ($node->browserNav == 3)
+        {
             return false;
         }
 
-        if (!isset($node->secure)) {
+        if (!isset($node->secure))
+        {
             $node->secure = JUri::getInstance()->isSSL();
         }
 
-        $link = JRoute::_($node->link, true, $node->secure);
+        if ($node->secure)
+        {
+            $link = JRoute::_($node->link, true, $node->secure);
+        } else
+        {
+            $link = rtrim(JUri::root(), '/') . JRoute::_($node->link, true);
+        }
 
         // link is already in xml map
-        if (isset($this->links[$link])) {
+        if (isset($this->links[$link]))
+        {
             return true;
         }
 
         $this->count++;
         $this->links[$link] = true;
 
-        if (!isset($node->priority)) {
+        if (!isset($node->priority))
+        {
             $node->priority = $this->params->get('default_priority', 0.5);
         }
 
-        if (!isset($node->changefreq)) {
+        if (!isset($node->changefreq))
+        {
             $node->changefreq = $this->params->get('default_changefreq', 'daily');
         }
 
@@ -159,14 +186,15 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         // mandatory fields in every type of sitemap
         $url = $this->baseXml->addChild('url');
 
-        // TODO test if JUri::root() at this position correct
-        $url->addChild('loc', rtrim(JUri::root(), '/') . $link);
+        $url->addChild('loc', $link);
 
         /**
          * @see https://support.google.com/webmasters/answer/183668
          */
-        if ($this->isType('normal')) {
-            if ($modified) {
+        if ($this->isType('normal'))
+        {
+            if ($modified)
+            {
                 $url->addChild('lastmod', $modified);
             }
 
@@ -180,9 +208,10 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         /**
          * @see https://support.google.com/news/publisher/answer/74288
          */
-        if ($this->isType('news')) {
-
-            if (!isset($node->language) || $node->language == '*') {
+        if ($this->isType('news'))
+        {
+            if (!isset($node->language) || $node->language == '*')
+            {
                 $node->language = $this->defaultLanguage;
             }
 
@@ -193,19 +222,23 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
             $news->addChild('news:publication_date', $modified);
             $news->addChild('news:title', $node->name);
 
-            if (isset($node->keywords) && !empty($node->keywords)) {
+            if (isset($node->keywords) && !empty($node->keywords))
+            {
                 $news->addChild('news:keywords', $node->keywords);
             }
 
-            if (isset($node->access) && !empty($node->access)) {
+            if (isset($node->access) && !empty($node->access))
+            {
                 $news->addChild('news:access', $node->access);
             }
 
-            if (isset($node->genres) && !empty($node->genres)) {
+            if (isset($node->genres) && !empty($node->genres))
+            {
                 $news->addChild('news:genres', $node->genres);
             }
 
-            if (isset($node->stock_tickers) && !empty($node->stock_tickers)) {
+            if (isset($node->stock_tickers) && !empty($node->stock_tickers))
+            {
                 $news->addChild('news:stock_tickers', $node->stock_tickers);
             }
         }
@@ -213,24 +246,30 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         /**
          * @see https://support.google.com/webmasters/answer/178636
          */
-        if ($this->isType('images')) {
-            foreach ($node->images as $img) {
+        if ($this->isType('images'))
+        {
+            foreach ($node->images as $img)
+            {
                 $image = $this->baseXml->addChild('image:image');
                 $image->addChild('image:loc', $img->src);
 
-                if (isset($img->title) && !empty($img->title)) {
+                if (isset($img->title) && !empty($img->title))
+                {
                     $image->addChild('image:title', $img->title);
                 }
 
-                if (isset($img->caption) && !empty($img->caption)) {
+                if (isset($img->caption) && !empty($img->caption))
+                {
                     $image->addChild('image:caption', $image->caption);
                 }
 
-                if (isset($img->geo_location) && !empty($img->geo_location)) {
+                if (isset($img->geo_location) && !empty($img->geo_location))
+                {
                     $image->addChild('image:geo_location', $img->geo_location);
                 }
 
-                if (isset($img->license) && !empty($img->license)) {
+                if (isset($img->license) && !empty($img->license))
+                {
                     $image->addChild('image:license', $img->license);
                 }
             }
@@ -239,26 +278,32 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         /**
          * @see https://support.google.com/webmasters/answer/80472
          */
-        if ($this->isType('videos')) {
-            foreach ($node->videos as $vdi) {
+        if ($this->isType('videos'))
+        {
+            foreach ($node->videos as $vdi)
+            {
                 $video = $this->baseXml->addChild('video:video');
                 $video->addChild('video:thumbnail_loc', $vdi->thumbnail_loc);
                 $video->addChild('video:title', $vdi->title);
                 $video->addChild('video:description', $vdi->description);
 
-                if (isset($vdi->video) && !empty($vdi->video)) {
+                if (isset($vdi->video) && !empty($vdi->video))
+                {
                     $video->addChild('video:video', $vdi->video);
                 }
 
-                if (isset($vdi->duration) && !empty($vdi->duration)) {
+                if (isset($vdi->duration) && !empty($vdi->duration))
+                {
                     $video->addChild('video:duration', $vdi->duration);
                 }
 
-                if (isset($vdi->duration) && !empty($vdi->duration)) {
+                if (isset($vdi->duration) && !empty($vdi->duration))
+                {
                     $video->addChild('video:duration', $vdi->duration);
                 }
 
-                if (isset($vdi->duration) && !empty($vdi->duration)) {
+                if (isset($vdi->duration) && !empty($vdi->duration))
+                {
                     $video->addChild('video:duration', $vdi->duration);
                 }
             }
@@ -267,19 +312,28 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         return true;
     }
 
+    /**
+     * @param stdClass $node
+     *
+     * @return int|null|string
+     */
     protected function getValidNodeModified(stdClass $node)
     {
         $nullDate = JFactory::getDbo()->getNullDate();
 
         $modified = (isset($node->modified) && $node->modified != false && $node->modified != $nullDate && $node->modified != -1) ? $node->modified : null;
-        if (!$modified && $this->isType('news')) {
+        if (!$modified && $this->isType('news'))
+        {
             $modified = JFactory::getDate()->toUnix();
         }
-        if ($modified && !is_numeric($modified)) {
+
+        if ($modified && !is_numeric($modified))
+        {
             $modified = JFactory::getDate($modified)->toUnix();
         }
 
-        if ($modified) {
+        if ($modified)
+        {
             $modified = gmdate('Y-m-d\TH:i:s\Z', $modified);
         }
 
@@ -299,15 +353,23 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
      */
     protected function getProperty($property, $value, $Itemid, $view, $uid)
     {
-        if (isset($this->sitemapItems[$view][$Itemid][$uid][$property])) {
+        if (isset($this->sitemapItems[$view][$Itemid][$uid][$property]))
+        {
             return $this->sitemapItems[$view][$Itemid][$uid][$property];
         }
+
         return $value;
     }
 
+    /**
+     * @param string $type
+     *
+     * @return bool
+     */
     protected function isType($type)
     {
-        switch ($type) {
+        switch ($type)
+        {
             default:
             case 'normal':
                 return !$this->isNews && !$this->isImages && !$this->isVideos;
@@ -357,14 +419,5 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
     public function displayAsVideos($val)
     {
         $this->isVideos = (bool)$val;
-    }
-
-    public function __get($var)
-    {
-        if (!in_array($var, array('isNews', 'isImages', 'isVideos'))) {
-            throw new InvalidArgumentException();
-        }
-
-        return $this->$var;
     }
 }

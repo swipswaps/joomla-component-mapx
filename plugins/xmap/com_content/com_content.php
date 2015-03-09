@@ -1,10 +1,12 @@
 <?php
 
 /**
- * @author     Guillermo Vargas <guille@vargas.co.cr>
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
@@ -15,13 +17,21 @@ JLoader::register('ContentHelperQuery', JPATH_SITE . '/components/com_content/he
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 
+/**
+ * Class xmap_com_content
+ */
 class xmap_com_content
 {
+    /**
+     * @param $node
+     * @param $params
+     */
     public static function prepareMenuItem($node, &$params)
     {
         $db = JFactory::getDbo();
         $link_query = parse_url($node->link);
-        if (!isset($link_query['query'])) {
+        if (!isset($link_query['query']))
+        {
             return;
         }
 
@@ -38,11 +48,14 @@ class xmap_com_content
         $add_pagebreaks = ArrayHelper::getValue($params, 'add_pagebreaks', 1);
         $params['add_pagebreaks'] = ArrayHelper::getValue($params, 'add_pagebreaks', 1);
 
-        switch ($view) {
+        switch ($view)
+        {
             case 'category':
-                if ($id) {
+                if ($id)
+                {
                     $node->uid = 'com_contentc' . $id;
-                } else {
+                } else
+                {
                     $node->uid = 'com_content' . $layout;
                 }
                 $node->expandible = true;
@@ -58,23 +71,27 @@ class xmap_com_content
                     ->from($db->quoteName('#__content'))
                     ->where($db->quoteName('id') . '=' . intval($id));
 
-                if ($params['add_pagebreaks'] || $params['add_images']) {
+                if ($params['add_pagebreaks'] || $params['add_images'])
+                {
                     $query->select($db->quoteName('introtext'))
                         ->select($db->quoteName('fulltext'));
                 }
 
 
                 $db->setQuery($query);
-                if (($row = $db->loadObject()) != null) {
+                if (($row = $db->loadObject()) != null)
+                {
                     $node->modified = $row->modified;
 
                     // TODO wtf?
                     $text = @$item->introtext . @$item->fulltext;
-                    if ($params['add_images']) {
+                    if ($params['add_images'])
+                    {
                         $node->images = XmapHelper::getImages($text, ArrayHelper::getValue($params, 'max_images', 1000));
                     }
 
-                    if ($params['add_pagebreaks']) {
+                    if ($params['add_pagebreaks'])
+                    {
                         $node->subnodes = XmapHelper::getPagebreaks($text, $node->link);
                         $node->expandible = (count($node->subnodes) > 0); // This article has children
                     }
@@ -90,10 +107,12 @@ class xmap_com_content
     }
 
     /**
-     * Expands a com_content menu item
+     * @param XmapDisplayer $xmap
+     * @param $parent
+     * @param $params
      *
-     * @return void
-     * @since  1.0
+     * @return bool|null
+     * @throws Exception
      */
     public static function getTree(XmapDisplayer $xmap, $parent, &$params)
     {
@@ -103,7 +122,8 @@ class xmap_com_content
         $result = null;
 
         $link_query = parse_url($parent->link);
-        if (!isset($link_query['query'])) {
+        if (!isset($link_query['query']))
+        {
             return;
         }
 
@@ -160,7 +180,8 @@ class xmap_com_content
             || $xmap->view == 'navigator');
         $params['add_pagebreaks'] = $add_pagebreaks;
 
-        if ($params['add_pagebreaks'] && !defined('_XMAP_COM_CONTENT_LOADED')) {
+        if ($params['add_pagebreaks'] && !defined('_XMAP_COM_CONTENT_LOADED'))
+        {
             define('_XMAP_COM_CONTENT_LOADED', 1);  // Load it just once
             $lang = JFactory::getLanguage();
             $lang->load('plg_content_pagebreak');
@@ -199,34 +220,41 @@ class xmap_com_content
         // Define the language filter condition for the query
         $params['language_filter'] = $app->getLanguageFilter();
 
-        switch ($view) {
+        switch ($view)
+        {
             case 'category':
-                if (!$id) {
+                if (!$id)
+                {
                     $id = ArrayHelper::getValue($params, 'id', 0, 'int');
                 }
-                if ($params['expand_categories'] && $id) {
+                if ($params['expand_categories'] && $id)
+                {
                     $result = self::expandCategory($xmap, $parent, $id, $params, $parent->id);
                 }
                 break;
             case 'featured':
-                if ($params['expand_featured']) {
+                if ($params['expand_featured'])
+                {
                     $result = self::includeCategoryContent($xmap, $parent, 'featured', $params, $parent->id);
                 }
                 break;
             case 'categories':
-                if ($params['expand_categories']) {
+                if ($params['expand_categories'])
+                {
                     $result = self::expandCategory($xmap, $parent, ($id ? $id : 1), $params, $parent->id);
                 }
                 break;
             case 'archive':
-                if ($params['expand_featured']) {
+                if ($params['expand_featured'])
+                {
                     $result = self::includeCategoryContent($xmap, $parent, 'archived', $params, $parent->id);
                 }
                 break;
             case 'article':
                 // if it's an article menu item, we have to check if we have to expand the
                 // article's page breaks
-                if ($params['add_pagebreaks']) {
+                if ($params['add_pagebreaks'])
+                {
                     $query = $db->getQuery(true);
 
                     $query->select($db->quoteName('introtext'))
@@ -247,6 +275,7 @@ class xmap_com_content
                 }
 
         }
+
         return $result;
     }
 
@@ -259,6 +288,7 @@ class xmap_com_content
      * @param int $catid the id of the category to be expanded
      * @param array $params an assoc array with the params for this plugin on Xmap
      * @param int $itemid the itemid to use for this category's children
+     *
      * @return bool
      */
     protected static function expandCategory(XmapDisplayer $xmap, $parent, $catid, &$params, $itemid)
@@ -267,11 +297,13 @@ class xmap_com_content
 
         $where = array('a.parent_id = ' . $catid . ' AND a.published = 1 AND a.extension=\'com_content\'');
 
-        if ($params['language_filter']) {
+        if ($params['language_filter'])
+        {
             $where[] = 'a.language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')';
         }
 
-        if (!$params['show_unauth']) {
+        if (!$params['show_unauth'])
+        {
             $where[] = 'a.access IN (' . $params['groups'] . ') ';
         }
 
@@ -286,9 +318,11 @@ class xmap_com_content
         $db->setQuery($query);
         $items = $db->loadObjectList();
 
-        if (count($items) > 0) {
+        if (count($items) > 0)
+        {
             $xmap->changeLevel(1);
-            foreach ($items as $item) {
+            foreach ($items as $item)
+            {
                 $node = new stdClass();
                 $node->id = $parent->id;
                 $node->uid = $parent->uid . 'c' . $item->id;
@@ -309,13 +343,16 @@ class xmap_com_content
 
                 $node->slug = $item->route ? ($item->id . ':' . $item->route) : $item->id;
                 $node->link = ContentHelperRoute::getCategoryRoute($node->slug);
-                if (strpos($node->link, 'Itemid=') === false) {
+                if (strpos($node->link, 'Itemid=') === false)
+                {
                     $node->itemid = $itemid;
                     $node->link .= '&Itemid=' . $itemid;
-                } else {
+                } else
+                {
                     $node->itemid = preg_replace('/.*Itemid=([0-9]+).*/', '$1', $node->link);
                 }
-                if ($xmap->printNode($node)) {
+                if ($xmap->printNode($node))
+                {
                     self::expandCategory($xmap, $parent, $item->id, $params, $node->itemid);
                 }
             }
@@ -324,6 +361,7 @@ class xmap_com_content
 
         // Include Category's content
         self::includeCategoryContent($xmap, $parent, $catid, $params, $itemid);
+
         return true;
     }
 
@@ -338,37 +376,46 @@ class xmap_com_content
         $db = JFactory::getDbo();
 
         // We do not do ordering for XML sitemap.
-        if ($xmap->view != 'xml') {
+        if ($xmap->view != 'xml')
+        {
             $orderby = self::buildContentOrderBy($parent->params, $parent->id, $Itemid);
             //$orderby = !empty($menuparams['orderby']) ? $menuparams['orderby'] : (!empty($menuparams['orderby_sec']) ? $menuparams['orderby_sec'] : 'rdate' );
             //$orderby = self::orderby_sec($orderby);
         }
 
-        if ($params['include_archived']) {
+        if ($params['include_archived'])
+        {
             $where = array('(a.state = 1 or a.state = 2)');
-        } else {
+        } else
+        {
             $where = array('a.state = 1');
         }
 
-        if ($catid == 'featured') {
+        if ($catid == 'featured')
+        {
             $where[] = 'a.featured=1';
-        } elseif ($catid == 'archived') {
+        } elseif ($catid == 'archived')
+        {
             $where = array('a.state=2');
-        } elseif (is_numeric($catid)) {
+        } elseif (is_numeric($catid))
+        {
             $where[] = 'a.catid=' . (int)$catid;
         }
 
-        if ($params['max_art_age'] || $xmap->isNews) {
+        if ($params['max_art_age'] || $xmap->isNews)
+        {
             $days = (($xmap->isNews && ($params['max_art_age'] > 3 || !$params['max_art_age'])) ? 3 : $params['max_art_age']);
             $where[] = "( a.created >= '"
                 . date('Y-m-d H:i:s', time() - $days * 86400) . "' ) ";
         }
 
-        if ($params['language_filter']) {
+        if ($params['language_filter'])
+        {
             $where[] = 'a.language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')';
         }
 
-        if (!$params['show_unauth']) {
+        if (!$params['show_unauth'])
+        {
             $where[] = 'a.access IN (' . $params['groups'] . ') ';
         }
 
@@ -390,9 +437,11 @@ class xmap_com_content
         $db->setQuery($query);
         $items = $db->loadObjectList();
 
-        if (count($items) > 0) {
+        if (count($items) > 0)
+        {
             $xmap->changeLevel(1);
-            foreach ($items as $item) {
+            foreach ($items as $item)
+            {
                 $node = new stdClass();
                 $node->id = $parent->id;
                 $node->uid = $parent->uid . 'a' . $item->id;
@@ -421,30 +470,41 @@ class xmap_com_content
                 // TODO use images attached to article
                 // Add images to the article
                 $text = @$item->introtext . @$item->fulltext;
-                if ($params['add_images']) {
+                if ($params['add_images'])
+                {
                     $node->images = XmapHelper::getImages($text, $params['max_images']);
                 }
 
                 // TODO wtf is this?
-                if ($params['add_pagebreaks']) {
+                if ($params['add_pagebreaks'])
+                {
                     $subnodes = XmapHelper::getPagebreaks($text, $node->link);
                     $node->expandible = (count($subnodes) > 0); // This article has children
                 }
 
-                if ($xmap->printNode($node) && $node->expandible) {
+                if ($xmap->printNode($node) && $node->expandible)
+                {
                     self::printNodes($xmap, $parent, $params, $subnodes);
                 }
             }
             $xmap->changeLevel(-1);
         }
+
         return true;
     }
 
+    /**
+     * @param XmapDisplayer $xmap
+     * @param $parent
+     * @param $params
+     * @param $subnodes
+     */
     protected static function printNodes(XmapDisplayer $xmap, $parent, &$params, &$subnodes)
     {
         $xmap->changeLevel(1);
         $i = 0;
-        foreach ($subnodes as $subnode) {
+        foreach ($subnodes as $subnode)
+        {
             $i++;
             $subnode->id = $parent->id;
             $subnode->uid = $parent->uid . 'p' . $i;
@@ -465,6 +525,7 @@ class xmap_com_content
      * @param Registry $params
      * @param int $parentId
      * @param int $itemid
+     *
      * @return string
      */
     protected static function buildContentOrderBy(&$params, $parentId, $itemid)
@@ -472,13 +533,15 @@ class xmap_com_content
         $app = JFactory::getApplication('site');
 
         // Case when the child gets a different menu itemid than it's parent
-        if ($parentId != $itemid) {
+        if ($parentId != $itemid)
+        {
             $menu = $app->getMenu();
             $item = $menu->getItem($itemid);
             $menuParams = clone($params);
             $itemParams = new Registry($item->params);
             $menuParams->merge($itemParams);
-        } else {
+        } else
+        {
             $menuParams =& $params;
         }
 
@@ -486,7 +549,8 @@ class xmap_com_content
         $filter_order_Dir = $app->getUserStateFromRequest('com_content.category.list.' . $itemid . '.filter_order_Dir', 'filter_order_Dir', '', 'cmd');
         $orderby = ' ';
 
-        if ($filter_order && $filter_order_Dir) {
+        if ($filter_order && $filter_order_Dir)
+        {
             $orderby .= $filter_order . ' ' . $filter_order_Dir . ', ';
         }
 

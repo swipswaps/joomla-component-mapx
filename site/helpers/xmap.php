@@ -1,10 +1,12 @@
 <?php
 
 /**
- * @author     Guillermo Vargas <guille@vargas.co.cr>
- * @author     Branko Wilhelm <branko.wilhelm@gmail.com>
- * @link       http://www.z-index.net
- * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @author      Guillermo Vargas <guille@vargas.co.cr>
+ * @author      Branko Wilhelm <branko.wilhelm@gmail.com>
+ * @link        http://www.z-index.net
+ * @copyright   (c) 2005 - 2009 Joomla! Vargas. All rights reserved.
+ * @copyright   (c) 2015 Branko Wilhelm. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
@@ -13,6 +15,9 @@ use Joomla\Registry\Registry;
 
 JLoader::import('joomla.filesystem.file');
 
+/**
+ * Class XmapHelper
+ */
 abstract class XmapHelper
 {
     /**
@@ -37,7 +42,8 @@ abstract class XmapHelper
      */
     public static function getLanguageCode()
     {
-        if (is_null(self::$languageCode)) {
+        if (is_null(self::$languageCode))
+        {
             $languages = JLanguageHelper::getLanguages('lang_code');
             self::$languageCode = $languages[JFactory::getLanguage()->getTag()]->sef;
         }
@@ -45,6 +51,12 @@ abstract class XmapHelper
         return self::$languageCode;
     }
 
+    /**
+     * @param $selections
+     *
+     * @return array
+     * @throws Exception
+     */
     public static function getMenuItems($selections)
     {
         /** @var JApplicationSite $app */
@@ -53,7 +65,8 @@ abstract class XmapHelper
         $user = JFactory::getUser();
         $list = array();
 
-        foreach ($selections as $menutype => $menuOptions) {
+        foreach ($selections as $menutype => $menuOptions)
+        {
             // Initialize variables.
             // Get the menu items as a tree.
             $query = $db->getQuery(true);
@@ -76,64 +89,80 @@ abstract class XmapHelper
             $query->where('n.access IN (' . implode(',', (array)$user->getAuthorisedViewLevels()) . ')');
 
             // Filter by language
-            if ($app->getLanguageFilter()) {
+            if ($app->getLanguageFilter())
+            {
                 $query->where('n.language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
             }
 
             $db->setQuery($query);
 
-            try {
+            try
+            {
                 $tmpList = $db->loadObjectList('id');
-            } catch (RuntimeException $e) {
+            } catch (RuntimeException $e)
+            {
                 JError::raise(E_WARNING, $e->getCode(), $e->getMessage());
+
                 return array();
             }
 
             $list[$menutype] = array();
 
             // Set some values to make nested HTML rendering easier.
-            foreach ($tmpList as $id => $item) {
+            foreach ($tmpList as $id => $item)
+            {
                 $item->items = array();
 
                 $params = new Registry($item->params);
                 $item->uid = 'itemid' . $item->id;
 
-                if (preg_match('#^/?index.php.*option=(com_[^&]+)#', $item->link, $matches)) {
+                if (preg_match('#^/?index.php.*option=(com_[^&]+)#', $item->link, $matches))
+                {
                     $item->option = $matches[1];
                     $componentParams = clone(JComponentHelper::getParams($item->option));
                     $componentParams->merge($params);
                     //$params->merge($componentParams);
                     $params = $componentParams;
-                } else {
+                } else
+                {
                     $item->option = null;
                 }
 
                 $item->params = $params;
 
-                if ($item->type != 'separator') {
+                if ($item->type != 'separator')
+                {
 
                     $item->priority = $menuOptions['priority'];
                     $item->changefreq = $menuOptions['changefreq'];
 
                     self::prepareMenuItem($item);
-                } else {
+                } else
+                {
                     $item->priority = null;
                     $item->changefreq = null;
                 }
 
-                if ($item->parent_id > 1) {
+                if ($item->parent_id > 1)
+                {
                     $tmpList[$item->parent_id]->items[$item->id] = $item;
-                } else {
+                } else
+                {
                     $list[$menutype][$item->id] = $item;
                 }
             }
         }
+
         return $list;
     }
 
+    /**
+     * @return array|null
+     */
     public static function getExtensions()
     {
-        if (is_null(self::$extensions)) {
+        if (is_null(self::$extensions))
+        {
             $db = JFactory::getDbo();
 
             // init as array so this method called be only once
@@ -149,19 +178,24 @@ abstract class XmapHelper
 
             $db->setQuery($query);
 
-            try {
+            try
+            {
                 $extensions = $db->loadObjectList('element');
-            } catch (RuntimeException $e) {
+            } catch (RuntimeException $e)
+            {
                 return self::$extensions;
             }
 
-            if (empty($extensions)) {
+            if (empty($extensions))
+            {
                 return self::$extensions;
             }
 
-            foreach ($extensions as $element => $extension) {
+            foreach ($extensions as $element => $extension)
+            {
                 // file_exists should be not required if extension marked as enabled?!
-                if (JFile::exists(JPATH_PLUGINS . '/' . $extension->folder . '/' . $element . '/' . $element . '.php')) {
+                if (JFile::exists(JPATH_PLUGINS . '/' . $extension->folder . '/' . $element . '/' . $element . '.php'))
+                {
                     require_once(JPATH_PLUGINS . '/' . $extension->folder . '/' . $element . '/' . $element . '.php');
                     $params = new Registry($extension->params);
                     $extension->params = $params->toArray();
@@ -186,23 +220,33 @@ abstract class XmapHelper
         $extensions = self::getExtensions();
         $className = 'xmap_' . $item->option;
 
-        if (empty($extensions[$item->option])) {
+        if (empty($extensions[$item->option]))
+        {
             return false;
         }
 
         // create only one instance
-        if (!isset(self::$instances[$className])) {
+        if (!isset(self::$instances[$className]))
+        {
             self::$instances[$className] = new $className;
         }
 
-        if (method_exists(self::$instances[$className], 'prepareMenuItem')) {
+        if (method_exists(self::$instances[$className], 'prepareMenuItem'))
+        {
             call_user_func_array(array(self::$instances[$className], 'prepareMenuItem'), array(&$item, &$extensions[$item->option]->params));
+
             return true;
         }
 
         return false;
     }
 
+    /**
+     * @param $text
+     * @param $max
+     *
+     * @return array|null
+     */
     public static function getImages($text, $max)
     {
         $urlBase = JUri::base();
@@ -215,18 +259,23 @@ abstract class XmapHelper
         // Loog for <a> tags with href to images
         preg_match_all('/<a[^>]*?(?:(?:[^>]*href="(?P<src>[^"]+\.(gif|png|jpg|jpeg))")|(?:[^>]*alt="(?P<alt>[^"]+)")|(?:[^>]*title="(?P<title>[^"]+)"))+[^>]*>/i', $text, $matches2, PREG_SET_ORDER);
         $matches = array_merge($matches1, $matches2);
-        if (count($matches)) {
+        if (count($matches))
+        {
             $images = array();
 
             $count = count($matches);
             $j = 0;
-            for ($i = 0; $i < $count && $j < $max; $i++) {
-                if (trim($matches[$i]['src']) && (substr($matches[$i]['src'], 0, 1) == '/' || !preg_match('/^https?:\/\//i', $matches[$i]['src']) || substr($matches[$i]['src'], 0, $urlBaseLen) == $urlBase)) {
+            for ($i = 0; $i < $count && $j < $max; $i++)
+            {
+                if (trim($matches[$i]['src']) && (substr($matches[$i]['src'], 0, 1) == '/' || !preg_match('/^https?:\/\//i', $matches[$i]['src']) || substr($matches[$i]['src'], 0, $urlBaseLen) == $urlBase))
+                {
                     $src = $matches[$i]['src'];
-                    if (substr($src, 0, 1) == '/') {
+                    if (substr($src, 0, 1) == '/')
+                    {
                         $src = substr($src, 1);
                     }
-                    if (!preg_match('/^https?:\//i', $src)) {
+                    if (!preg_match('/^https?:\//i', $src))
+                    {
                         $src = $urlBase . $src;
                     }
                     $image = new stdClass;
@@ -237,26 +286,39 @@ abstract class XmapHelper
                 }
             }
         }
+
         return $images;
     }
 
+    /**
+     * @param $text
+     * @param $baseLink
+     *
+     * @return array
+     */
     public static function getPagebreaks($text, $baseLink)
     {
         $matches = $subnodes = array();
         if (preg_match_all(
             '/<hr\s*[^>]*?(?:(?:\s*alt="(?P<alt>[^"]+)")|(?:\s*title="(?P<title>[^"]+)"))+[^>]*>/i',
             $text, $matches, PREG_SET_ORDER)
-        ) {
+        )
+        {
             $i = 2;
-            foreach ($matches as $match) {
-                if (strpos($match[0], 'class="system-pagebreak"') !== false) {
+            foreach ($matches as $match)
+            {
+                if (strpos($match[0], 'class="system-pagebreak"') !== false)
+                {
                     $link = $baseLink . '&limitstart=' . ($i - 1);
 
-                    if (@$match['alt']) {
+                    if (@$match['alt'])
+                    {
                         $title = stripslashes($match['alt']);
-                    } elseif (@$match['title']) {
+                    } elseif (@$match['title'])
+                    {
                         $title = stripslashes($match['title']);
-                    } else {
+                    } else
+                    {
                         $title = JText::sprintf('Page #', $i);
                     }
                     $subnode = new stdClass();
@@ -269,6 +331,7 @@ abstract class XmapHelper
             }
 
         }
+
         return $subnodes;
     }
 }
