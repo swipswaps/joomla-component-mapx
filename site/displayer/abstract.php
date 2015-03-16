@@ -64,7 +64,12 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
     protected $isVideos = false;
 
     /**
-     * @var Joomla\Registry\Registry
+     * @var bool
+     */
+    protected $isMobile = false;
+
+    /**
+     * @var Registry
      */
     protected $params = null;
 
@@ -81,7 +86,6 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
 
         $this->params = JComponentHelper::getParams('com_xmap');
     }
-
 
     /**
      * @todo refactor
@@ -104,26 +108,24 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
 
             $node->id = $item->id;
             $node->uid = $item->uid;
-            $node->name = $item->title;               // displayed name of node
-            // $node->parent    = $item->parent;              // id of parent node
-            $node->browserNav = $item->browserNav;          // how to open link
+            $node->name = $item->title;                             // displayed name of node
+            $node->browserNav = $item->browserNav;                  // how to open link
             $node->priority = $item->priority;
             $node->changefreq = $item->changefreq;
-            $node->type = $item->type;                // menuentry-type
-            $node->home = $item->home;                // If it's a home menu entry
-            // $node->link      = isset( $item->link ) ? htmlspecialchars( $item->link ) : '';
+            $node->type = $item->type;                              // menuentry-type
+            $node->home = $item->home;                              // If it's a home menu entry
             $node->link = $item->link;
             $node->option = $item->option;
             $node->modified = @$item->modified;
             $node->secure = $item->params->get('secure');
 
             // New on Xmap 2.0: send the menu params
-            $node->params =& $item->params;
+            $node->params = &$item->params;
 
             if ($node->home == 1)
             {
                 // Correct the URL for the home page.
-                $node->link = JURI::base();
+                $node->link = JUri::base();
             }
             switch ($item->type)
             {
@@ -250,9 +252,9 @@ abstract class XmapDisplayerAbstract implements XmapDisplayerInterface, XmapDisp
      */
     public function __get($var)
     {
-        if (!in_array($var, array('isNews', 'isImages', 'isVideos')))
+        if (!in_array($var, array('isNews', 'isImages', 'isVideos', 'isMobile')))
         {
-            throw new InvalidArgumentException();
+            throw new InvalidArgumentException(JText::_('ERROR'));
         }
 
         return $this->$var;

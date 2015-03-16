@@ -5,10 +5,9 @@
     </layout>
     <fields name="request">
         <fieldset name="request" addfieldpath="/administrator/components/com_xmap/models/fields">
-            <field name="id" type="sitemap" default="" clear="flase" filter="integer" required="true" label="COM_XMAP_SELECT_SITEMAP_LABEL" description="COM_XMAP_SELECT_SITEMAP_DESC" />
+            <field name="id" type="sitemap" default="" clear="false" filter="integer" required="true" label="COM_XMAP_SELECT_SITEMAP_LABEL" description="COM_XMAP_SELECT_SITEMAP_DESC" />
             <field name="news" type="radio" default="" clear="true" filter="integer" class="btn-group btn-group-yesno" label="COM_XMAP_XML_AS_NEWS_LABEL" description="COM_XMAP_XML_AS_NEWS_DESC">
-                <option value="">JNO
-                </option>
+                <option value="">JNO</option>
                 <option value="1">JYES</option>
             </field>
             <field name="images" type="radio" default="" clear="true" filter="integer" class="btn-group btn-group-yesno" label="COM_XMAP_XML_AS_IMAGES_LABEL" description="COM_XMAP_XML_AS_IMAGES_DESC">
@@ -16,6 +15,10 @@
                 <option value="1">JYES</option>
             </field>
             <field name="videos" type="radio" default="" clear="true" filter="integer" class="btn-group btn-group-yesno" label="COM_XMAP_XML_AS_VIDEOS_LABEL" description="COM_XMAP_XML_AS_VIDEOS_DESC">
+                <option value="">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="mobile" type="radio" default="" clear="true" filter="integer" class="btn-group btn-group-yesno" label="COM_XMAP_XML_AS_MOBILE_LABEL" description="COM_XMAP_XML_AS_MOBILE_DESC">
                 <option value="">JNO</option>
                 <option value="1">JYES</option>
             </field>

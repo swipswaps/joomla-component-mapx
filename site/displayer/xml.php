@@ -42,6 +42,63 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
     protected $defaultLanguage = '*';
 
     /**
+     * @see News: https://support.google.com/news/publisher/answer/74288
+     * @see Images: https://support.google.com/webmasters/answer/178636
+     * @see Videos: https://support.google.com/webmasters/answer/80472
+     * @see Mobile: https://support.google.com/webmasters/answer/34648
+     *
+     * @var array Array of valid fields for each sitemap type
+     */
+    protected $fields = array(
+        'news'   => array(
+            'publication_date',
+            'title',
+            'keywords',
+            'access',
+            'genres',
+            'stock_tickers',
+        ),
+
+        'images' => array(
+            'loc',
+            'title',
+            'caption',
+            'geo_location',
+            'license',
+        ),
+
+        'videos' => array(
+            'thumbnail_loc',
+            'title',
+            'description',
+            'content_loc',
+            'player_loc',
+            'duration',
+            'expiration_date',
+            'rating',
+            'view_count',
+            'publication_date',
+            'family_friendly',
+            'restriction',
+            'gallery_loc',
+            'price',
+            'requires_subscription',
+            'uploader',
+            'live',
+        )
+    );
+
+    /**
+     * @var array xml namespaces
+     */
+    protected $spaces = array(
+        'news'   => 'http://www.google.com/schemas/sitemap-news/0.9',
+        'image'  => 'http://www.google.com/schemas/sitemap-image/1.1',
+        'video'  => 'http://www.google.com/schemas/sitemap-video/1.1',
+        'mobile' => 'http://www.google.com/schemas/sitemap-mobile/1.0',
+    );
+
+    /**
      * @param stdClass $sitemap
      * @param array $items
      * @param array $extensions
@@ -71,19 +128,12 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         $this->baseXml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
         $this->baseXml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
-        if ($this->isType('news'))
+        foreach ($this->spaces as $space => $schema)
         {
-            $this->baseXml->addAttribute('xmlns:xmlns:news', 'http://www.google.com/schemas/sitemap-news/0.9');
-        }
-
-        if ($this->isType('images'))
-        {
-            $this->baseXml->addAttribute('xmlns:xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
-        }
-
-        if ($this->isType('videos'))
-        {
-            $this->baseXml->addAttribute('xmlns:xmlns:video', 'http://www.google.com/schemas/sitemap-video/1.1');
+            if ($this->isType($space))
+            {
+                $this->baseXml->addAttribute('xmlns:xmlns:' . $space, $schema);
+            }
         }
     }
 
@@ -96,13 +146,8 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         {
             $this->printMenuTree($items);
         }
-        $dom = new DomDocument();
-        $dom->loadXML($this->baseXml->asXML());
-        $dom->formatOutput = true;
 
-        $this->output = $dom->saveXML();
-
-        return $this->output;
+        return $this->baseXml->asXML();
     }
 
     /**
@@ -120,21 +165,6 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         }
 
         if ($this->isExcluded($node->id, $node->uid))
-        {
-            return false;
-        }
-
-        if ($this->isType('news') && (!isset($node->newsItem) || !$node->newsItem))
-        {
-            return false;
-        }
-
-        if ($this->isType('images') && (!isset($node->images) || empty($node->images)))
-        {
-            return false;
-        }
-
-        if ($this->isType('videos') && (!isset($node->videos) || empty($node->videos)))
         {
             return false;
         }
@@ -205,10 +235,7 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
             $url->addChild('priority', $priority);
         }
 
-        /**
-         * @see https://support.google.com/news/publisher/answer/74288
-         */
-        if ($this->isType('news'))
+        if ($this->isType('news') && isset($node->newsItem) && $node->newsItem == true)
         {
             if (!isset($node->language) || $node->language == '*')
             {
@@ -216,97 +243,62 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
             }
 
             $news = $url->addChild('news:news');
+
+            // required fields
             $publication = $news->addChild('news:publication');
             $publication->addChild('news:name', $this->sitemap->params->get('news_publication_name'));
             $publication->addChild('news:language', $node->language);
-            $news->addChild('news:publication_date', $modified);
-            $news->addChild('news:title', $node->name);
 
-            if (isset($node->keywords) && !empty($node->keywords))
+            foreach ($this->fields['news'] as $field)
             {
-                $news->addChild('news:keywords', $node->keywords);
-            }
-
-            if (isset($node->access) && !empty($node->access))
-            {
-                $news->addChild('news:access', $node->access);
-            }
-
-            if (isset($node->genres) && !empty($node->genres))
-            {
-                $news->addChild('news:genres', $node->genres);
-            }
-
-            if (isset($node->stock_tickers) && !empty($node->stock_tickers))
-            {
-                $news->addChild('news:stock_tickers', $node->stock_tickers);
+                if (property_exists($node, $field) && !empty($node->{$field}))
+                {
+                    $news->addChild('news:' . $field, $node->{$field});
+                }
             }
         }
 
-        /**
-         * @see https://support.google.com/webmasters/answer/178636
-         */
-        if ($this->isType('images'))
+        if ($this->isType('images') && isset($node->images) && !empty($node->images))
         {
             foreach ($node->images as $img)
             {
                 $image = $this->baseXml->addChild('image:image');
-                $image->addChild('image:loc', $img->src);
 
-                if (isset($img->title) && !empty($img->title))
+                foreach ($this->fields['images'] as $field)
                 {
-                    $image->addChild('image:title', $img->title);
+                    if (property_exists($img, $field) && !empty($img->{$field}))
+                    {
+                        $image->addChild('image:' . $field, $img->{$field});
+                    }
                 }
 
-                if (isset($img->caption) && !empty($img->caption))
+                // backward compatibility
+                if (property_exists($img, 'src') && !empty($img->src))
                 {
-                    $image->addChild('image:caption', $image->caption);
-                }
-
-                if (isset($img->geo_location) && !empty($img->geo_location))
-                {
-                    $image->addChild('image:geo_location', $img->geo_location);
-                }
-
-                if (isset($img->license) && !empty($img->license))
-                {
-                    $image->addChild('image:license', $img->license);
+                    $image->addChild('image:loc', $img->src);
                 }
             }
         }
 
-        /**
-         * @see https://support.google.com/webmasters/answer/80472
-         */
-        if ($this->isType('videos'))
+        if ($this->isType('videos') && isset($node->videos) && !empty($node->videos))
         {
             foreach ($node->videos as $vdi)
             {
                 $video = $this->baseXml->addChild('video:video');
-                $video->addChild('video:thumbnail_loc', $vdi->thumbnail_loc);
-                $video->addChild('video:title', $vdi->title);
-                $video->addChild('video:description', $vdi->description);
 
-                if (isset($vdi->video) && !empty($vdi->video))
+                foreach ($this->fields['videos'] as $field)
                 {
-                    $video->addChild('video:video', $vdi->video);
-                }
-
-                if (isset($vdi->duration) && !empty($vdi->duration))
-                {
-                    $video->addChild('video:duration', $vdi->duration);
-                }
-
-                if (isset($vdi->duration) && !empty($vdi->duration))
-                {
-                    $video->addChild('video:duration', $vdi->duration);
-                }
-
-                if (isset($vdi->duration) && !empty($vdi->duration))
-                {
-                    $video->addChild('video:duration', $vdi->duration);
+                    if (property_exists($vdi, $field) && !empty($vdi->{$field}))
+                    {
+                        $video->addChild('video:' . $field, $vdi->{$field});
+                    }
                 }
             }
+        }
+
+        if ($this->isType('mobile') && isset($node->mobileItem) && $node->mobileItem == true)
+        {
+            $url->addChild('mobile:mobile');
         }
 
         return true;
@@ -341,7 +333,7 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
     }
 
     /**
-     * @todo also check if value on menuitem (added with new system plugin)
+     * @todo also check if value on menuitem (added with system plugin)
      *
      * @param string $property The property that is needed
      * @param string $value The default value if the property is not found
@@ -370,21 +362,27 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
     {
         switch ($type)
         {
-            default:
-            case 'normal':
-                return !$this->isNews && !$this->isImages && !$this->isVideos;
-                break;
-
             case'news':
-                return $this->isNews && !$this->isImages && !$this->isVideos;
+                return $this->isNews;
                 break;
 
             case 'images':
-                return $this->isImages && !$this->isNews;
+            case 'image':
+                return $this->isImages;
                 break;
 
             case 'videos':
-                return $this->isVideos && !$this->isNews;
+            case 'video':
+                return $this->isVideos;
+                break;
+
+            case 'mobile':
+                return $this->isMobile;
+                break;
+
+            default:
+            case 'normal':
+                return !$this->isNews;
                 break;
         }
     }
@@ -419,5 +417,13 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
     public function displayAsVideos($val)
     {
         $this->isVideos = (bool)$val;
+    }
+
+    /**
+     * @param bool $val
+     */
+    public function displayAsMobile($val)
+    {
+        $this->isMobile = (bool)$val;
     }
 }

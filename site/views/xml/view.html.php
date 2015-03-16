@@ -76,15 +76,16 @@ class XmapViewXml extends JViewLegacy
             return false;
         }
 
-        $web = JApplicationCms::getInstance('site');
-        $web->clearHeaders();
-        $web->setHeader('Content-Type', 'application/xml; charset=UTF-8');
-        $web->sendHeaders();
+        $app = JFactory::getApplication();
+        $app->clearHeaders();
+        $app->setHeader('Content-Type', 'application/xml; charset=UTF-8');
+        $app->sendHeaders();
 
         $this->displayer = new XmapDisplayerXml($this->item, $this->items, $this->extensions);
         $this->displayer->displayAsNews($input->getBool('news'));
         $this->displayer->displayAsImages($input->getBool('images'));
         $this->displayer->displayAsVideos($input->getBool('videos'));
+        $this->displayer->displayAsMobile($input->getBool('mobile'));
         $this->displayer->setSitemapItems($this->sitemapItems);
 
         parent::display($tpl);

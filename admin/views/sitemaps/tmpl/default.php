@@ -20,6 +20,7 @@ $listOrder = $this->escape($this->state->get('list.ordering'));
 $listDirn = $this->escape($this->state->get('list.direction'));
 $trashed = $this->state->get('filter.state') == -2 ? true : false;
 $sortFields = $this->getSortFields();
+$params = JComponentHelper::getParams('com_xmap');
 
 JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@media(max-width: 767px){#toolbar-power-cord{float:none;}}');
 ?>
@@ -168,21 +169,36 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
 
                                 <?php if ($item->published): ?>
                                     <div class="pull-right">
+                                        <?php if ($params->get('show_link_html', 1)): ?>
                                         <a href="<?php echo '../index.php?option=com_xmap&amp;view=html&amp;id=' . $item->id; ?>"
                                            target="_blank" class="btn-micro btn-success hasTooltip"
                                            title="<?php echo JText::_('COM_XMAP_HTML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_HTML_LINK'); ?></a>
+                                        <?php endif; ?>
+                                        <?php if ($params->get('show_link_xml', 1)): ?>
                                         <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;id=' . $item->id; ?>"
                                            target="_blank" class="btn-micro btn-primary hasTooltip"
                                            title="<?php echo JText::_('COM_XMAP_XML_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_XML_LINK'); ?></a>
-                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>"
-                                           target="_blank" class="btn-micro btn-success hasTooltip"
-                                           title="<?php echo JText::_('COM_XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_NEWS_LINK'); ?></a>
-                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;images=1&amp;id=' . $item->id; ?>"
-                                           target="_blank" class="btn-micro btn-success hasTooltip"
-                                           title="<?php echo JText::_('COM_XMAP_IMAGES_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_IMAGES_LINK'); ?></a>
-                                        <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;videos=1&amp;id=' . $item->id; ?>"
-                                           target="_blank" class="btn-micro btn-success hasTooltip"
-                                           title="<?php echo JText::_('COM_XMAP_VIDEOS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_VIDEOS_LINK'); ?></a>
+                                        <?php endif; ?>
+                                        <?php if ($params->get('show_link_news', 1)): ?>
+                                            <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;news=1&amp;id=' . $item->id; ?>"
+                                               target="_blank" class="btn-micro btn-success hasTooltip"
+                                               title="<?php echo JText::_('COM_XMAP_NEWS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_NEWS_LINK'); ?></a>
+                                        <?php endif; ?>
+                                        <?php if ($params->get('show_link_images', 1)): ?>
+                                            <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;images=1&amp;id=' . $item->id; ?>"
+                                               target="_blank" class="btn-micro btn-success hasTooltip"
+                                               title="<?php echo JText::_('COM_XMAP_IMAGES_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_IMAGES_LINK'); ?></a>
+                                        <?php endif; ?>
+                                        <?php if ($params->get('show_link_videos', 0)): ?>
+                                            <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;videos=1&amp;id=' . $item->id; ?>"
+                                               target="_blank" class="btn-micro btn-success hasTooltip"
+                                               title="<?php echo JText::_('COM_XMAP_VIDEOS_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_VIDEOS_LINK'); ?></a>
+                                        <?php endif; ?>
+                                        <?php if ($params->get('show_link_mobile', 0)): ?>
+                                            <a href="<?php echo '../index.php?option=com_xmap&amp;view=xml&amp;mobile=1&amp;id=' . $item->id; ?>"
+                                               target="_blank" class="btn-micro btn-success hasTooltip"
+                                               title="<?php echo JText::_('COM_XMAP_MOBILE_LINK_TOOLTIP', true); ?>"><?php echo JText::_('COM_XMAP_MOBILE_LINK'); ?></a>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
                             </td>
