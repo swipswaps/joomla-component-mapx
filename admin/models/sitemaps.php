@@ -11,6 +11,7 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 
 /**
@@ -19,13 +20,24 @@ use Joomla\Utilities\ArrayHelper;
 class XmapModelSitemaps extends JModelList
 {
     /**
-     * array of search engines providers who allow to submit sitemapas
+     * array of search engines providers who allow to submit sitemaps
      *
      * @var array
      */
     protected $pings = array(
         'google' => 'http://www.google.com/webmasters/sitemaps/ping?sitemap=%s',
         'bing'   => 'http://www.bing.com/webmaster/ping.aspx?siteMap=%s',
+    );
+
+    /**
+     * @var array
+     */
+    protected $types = array(
+        'xml'    => true,
+        'news'   => false,
+        'images' => false,
+        'videos' => false,
+        'mobile' => false,
     );
 
     /**
@@ -194,6 +206,16 @@ class XmapModelSitemaps extends JModelList
             return false;
         }
 
+        if (empty($result))
+        {
+            return false;
+        }
+
+        foreach ($result as $item)
+        {
+            $item->params = new Registry($item->params);
+        }
+
         return $result;
     }
 
@@ -226,27 +248,37 @@ class XmapModelSitemaps extends JModelList
 
             foreach ($items as $item)
             {
-                try
+                foreach ($this->types as $type => $type_default)
                 {
-                    $url = urlencode(JUri::root() . 'index.php?option=com_xmap&view=xml&id=' . $item->id);
-                    $result = JHttpFactory::getHttp()->get(sprintf($ping, $url), null, $params->get('ping_timeout', 10));
-                } catch (Exception $e)
-                {
-                    $app->enqueueMessage($e->getMessage(), 'error');
-                    continue;
-                }
+                    // skip disabled types
+                    if (!$item->params->get('ping_' . $type, $type_default))
+                    {
+                        continue;
+                    }
 
-                $engine = JText::_('COM_XMAP_PING_' . strtoupper($engine) . '_LABEL');
+                    try
+                    {
+                        $url = urlencode(JUri::root() . 'index.php?option=com_xmap&view=xml&id=' . $item->id);
+                        $result = JHttpFactory::getHttp()->get(sprintf($ping, $url), null, $params->get('ping_timeout', 10));
+                    } catch (Exception $e)
+                    {
+                        $app->enqueueMessage($e->getMessage(), 'error');
+                        continue;
+                    }
 
-                if ($result->code == 200)
-                {
-                    $message = JText::sprintf('COM_XMAP_PING_PINGED_SUCCESS', $item->title, $engine);
-                    $app->enqueueMessage($message);
+                    $engine = JText::_('COM_XMAP_PING_' . strtoupper($engine) . '_LABEL');
 
-                } else
-                {
-                    $message = JText::sprintf('COM_XMAP_PING_PINGED_FAILED', $item->title, $engine, $result->code);
-                    $app->enqueueMessage($message, 'warning');
+                    if ($result->code == 200)
+                    {
+                        $type = JText::_('COM_XMAP_' . strtoupper($type) . '_LINK');
+                        $message = JText::sprintf('COM_XMAP_PING_PINGED_SUCCESS', $type, $item->title, $engine);
+                        $app->enqueueMessage($message);
+
+                    } else
+                    {
+                        $message = JText::sprintf('COM_XMAP_PING_PINGED_FAILED', $item->title, $engine, $result->code);
+                        $app->enqueueMessage($message, 'warning');
+                    }
                 }
             }
         }

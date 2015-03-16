@@ -35,5 +35,27 @@
             <field name="columns" type="text" default="1" filter="integer" label="COM_XMAP_ATTRIBS_COLUMNS_LABEL" description="COM_XMAP_ATTRIBS_COLUMNS_DESC" />
             <field name="news_publication_name" type="text" default="" label="COM_XMAP_ATTRIBS_NEWS_PUBLICATION_NAME_LABEL" description="COM_XMAP_ATTRIBS_NEWS_PUBLICATION_NAME_DESC" />
         </fieldset>
+        <fieldset name="ping" label="COM_XMAP_FIELDSET_PING_LABEL" description="COM_XMAP_FIELDSET_PING_DESC">
+            <field name="ping_xml" default="1" type="radio" class="btn-group btn-group-yesno" label="COM_XMAP_ATTRIBS_PING_XML_LABEL">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+            </field>
+            <field name="ping_news" default="0" type="radio" class="btn-group btn-group-yesno" label="COM_XMAP_ATTRIBS_PING_NEWS_LABEL">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+            </field>
+            <field name="ping_images" default="0" type="radio" class="btn-group btn-group-yesno" label="COM_XMAP_ATTRIBS_PING_IMAGES_LABEL">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+            </field>
+            <field name="ping_videos" default="0" type="radio" class="btn-group btn-group-yesno" label="COM_XMAP_ATTRIBS_PING_VIDEOS_LABEL">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+            </field>
+            <field name="ping_mobile" default="0" type="radio" class="btn-group btn-group-yesno" label="COM_XMAP_ATTRIBS_PING_MOBILE_LABEL">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+            </field>
+        </fieldset>
     </fields>
 </form>
