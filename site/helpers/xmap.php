@@ -52,6 +52,8 @@ abstract class XmapHelper
     }
 
     /**
+     * @todo refactor (reduce sql queries)
+     *
      * @param $selections
      *
      * @return array
@@ -242,6 +244,8 @@ abstract class XmapHelper
     }
 
     /**
+     * @todo used in xmap_com_content, change com_content plugin to use attached article images
+     *
      * @param $text
      * @param $max
      *
