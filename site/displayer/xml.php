@@ -242,18 +242,18 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
                 $node->language = $this->defaultLanguage;
             }
 
-            $news = $url->addChild('news:news');
+            $news = $url->addChild('news:news:news');
 
             // required fields
-            $publication = $news->addChild('news:publication');
-            $publication->addChild('news:name', $this->sitemap->params->get('news_publication_name'));
-            $publication->addChild('news:language', $node->language);
+            $publication = $news->addChild('news:news:publication');
+            $publication->addChild('news:news:name', $this->sitemap->params->get('news_publication_name'));
+            $publication->addChild('news:news:language', $node->language);
 
             foreach ($this->fields['news'] as $field)
             {
                 if (property_exists($node, $field) && !empty($node->{$field}))
                 {
-                    $news->addChild('news:' . $field, $node->{$field});
+                    $news->addChild('news:news:' . $field, $node->{$field});
                 }
             }
         }
@@ -262,20 +262,20 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         {
             foreach ($node->images as $img)
             {
-                $image = $this->baseXml->addChild('image:image');
+                $image = $url->addChild('image:image:image');
 
                 foreach ($this->fields['images'] as $field)
                 {
                     if (property_exists($img, $field) && !empty($img->{$field}))
                     {
-                        $image->addChild('image:' . $field, $img->{$field});
+                        $image->addChild('image:image:' . $field, $img->{$field});
                     }
                 }
 
                 // backward compatibility
                 if (property_exists($img, 'src') && !empty($img->src))
                 {
-                    $image->addChild('image:loc', $img->src);
+                    $image->addChild('image:image:loc', $img->src);
                 }
             }
         }
@@ -284,13 +284,13 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         {
             foreach ($node->videos as $vdi)
             {
-                $video = $this->baseXml->addChild('video:video');
+                $video = $url->addChild('video:video:video');
 
                 foreach ($this->fields['videos'] as $field)
                 {
                     if (property_exists($vdi, $field) && !empty($vdi->{$field}))
                     {
-                        $video->addChild('video:' . $field, $vdi->{$field});
+                        $video->addChild('video:video:' . $field, $vdi->{$field});
                     }
                 }
             }

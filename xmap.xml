@@ -8,7 +8,7 @@
     <authorEmail>branko.wilhelm@gmail.com</authorEmail>
     <authorUrl>www.z-index.net</authorUrl>
     <version>3.0 @REVISION@</version>
-    <description>Xmap - Sitemap Generator for Joomla!</description>
+    <description>mapX - Sitemap Generator for Joomla!</description>
     <install folder="admin">
         <sql>
             <file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
