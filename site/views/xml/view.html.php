@@ -92,6 +92,6 @@ class XmapViewXml extends JViewLegacy
 
         $this->getModel()->hit($this->displayer->getCount());
 
-        JFactory::getApplication()->close();
+        $app->close();
     }
 }

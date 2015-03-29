@@ -189,7 +189,11 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
             $link = JRoute::_($node->link, true, $node->secure);
         } else
         {
-            $link = rtrim(JUri::root(), '/') . JRoute::_($node->link, true);
+            if($node->link == JUri::root()) {
+                $link = $node->link;
+            }else{
+                $link = rtrim(JUri::root(), '/') . JRoute::_($node->link);
+            }
         }
 
         // link is already in xml map
