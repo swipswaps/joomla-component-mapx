@@ -262,6 +262,11 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
                     $news->addChild('news:news:' . $field, $node->{$field});
                 }
             }
+
+            if (!property_exists($news, 'news:news:publication_date'))
+            {
+                $news->addChild('news:news:publication_date', $modified);
+            }
         }
 
         if ($this->isType('images') && isset($node->images) && !empty($node->images))
