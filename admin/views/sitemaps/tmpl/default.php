@@ -63,7 +63,7 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                             class="icon-search"></i></button>
                     <button type="button" class="btn hasTooltip"
                             title="<?php echo JHtml::tooltipText('JSEARCH_FILTER_CLEAR'); ?>"
-                            onclick="document.id('filter_search').value='';this.form.submit();"><i
+                            onclick="document.getElementById('filter_search').value='';this.form.submit();"><i
                             class="icon-remove"></i></button>
                 </div>
                 <div class="btn-group pull-right hidden-phone">
