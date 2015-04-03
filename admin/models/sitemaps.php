@@ -248,6 +248,13 @@ class XmapModelSitemaps extends JModelList
 
             foreach ($items as $item)
             {
+                if ($item->published != 1)
+                {
+                    $message = JText::sprintf('COM_XMAP_PING_ITEM_NOT_PUBLISHED', $item->title);
+                    $app->enqueueMessage($message, 'warning');
+                    continue;
+                }
+
                 foreach ($this->types as $type => $type_default)
                 {
                     // skip disabled types
