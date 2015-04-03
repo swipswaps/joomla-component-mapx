@@ -26,14 +26,13 @@ class com_xmapInstallerScript
      */
     protected $outdated_files = array(
         // Backend
-        '/administrator/components/com_xmap/sitemap/tmpl/edit_legacy.php',
-        '/administrator/components/com_xmap/sitemap/tmpl/navigator.php',
-        '/administrator/components/com_xmap/sitemap/tmpl/navigator_class.php',
-        '/administrator/components/com_xmap/sitemap/tmpl/navigator_links.php',
-        '/administrator/components/com_xmap/sitemaps/tmpl/default_legacy.php',
-        '/administrator/components/com_xmap/sitemaps/tmpl/form.php',
-        '/administrator/components/com_xmap/sitemaps/tmpl/modal.php',
-        '/administrator/components/com_xmap/models/fields/modal/sitemaps.php',
+        '/administrator/components/com_xmap/views/sitemap/tmpl/edit_legacy.php',
+        '/administrator/components/com_xmap/views/sitemap/tmpl/navigator.php',
+        '/administrator/components/com_xmap/views/sitemap/tmpl/navigator_class.php',
+        '/administrator/components/com_xmap/views/sitemap/tmpl/navigator_links.php',
+        '/administrator/components/com_xmap/views/sitemaps/tmpl/default_legacy.php',
+        '/administrator/components/com_xmap/views/sitemaps/tmpl/form.php',
+        '/administrator/components/com_xmap/views/sitemaps/tmpl/modal.php',
         '/administrator/components/com_xmap/models/fields/xmapmenus.php',
         '/administrator/components/com_xmap/models/forms/extension.xml',
         '/administrator/components/com_xmap/manifest.xml',
@@ -55,6 +54,7 @@ class com_xmapInstallerScript
         '/administrator/components/com_xmap/elements',
         '/administrator/components/com_xmap/images',
         '/administrator/components/com_xmap/install',
+        '/administrator/components/com_xmap/models/fields/modal',
         // Site
         '/components/com_xmap/assets',
     );
