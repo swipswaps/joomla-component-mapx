@@ -54,7 +54,7 @@ abstract class XmapHelper
             $retval = JText::sprintf('COM_XMAP_DATE_DAYS_HOURS_AGO', $days, intval(($now - ($days * 86400) - $date) / 3600));
         } else
         {
-            $retval = JFactory::getDate($date)->format(JText::_('DATE_FORMAT_LC4'));
+            $retval = JFactory::getDate($date)->format(JText::_('DATE_FORMAT_LC2'));
         }
 
         return $retval;
