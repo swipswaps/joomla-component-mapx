@@ -55,7 +55,7 @@ JFactory::getDocument()->addStyleDeclaration('#toolbar-power-cord{float:right;}@
                     <input type="text" name="filter_search" id="filter_search"
                            placeholder="<?php echo JText::_('JSEARCH_FILTER'); ?>"
                            value="<?php echo $this->escape($this->state->get('filter.search')); ?>" class="hasTooltip"
-                           title="<?php echo JHtml::tooltipText('COM_PLUGINS_SEARCH_IN_TITLE'); ?>"/>
+                           title="<?php echo JHtml::tooltipText('COM_XMAP_SEARCH_IN_TITLE'); ?>"/>
                 </div>
                 <div class="btn-group pull-left">
                     <button type="submit" class="btn hasTooltip"
