@@ -40,6 +40,6 @@
         <field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" validate="rules" filter="rules" component="com_xmap" section="component" />
     </fieldset>
     <fieldset name="advanced" label="JGLOBAL_FIELDSET_ADVANCED">
-        <field name="ping_timeout" type="text" filter="integer" default="10" class="btn-group btn-group-yesno" label="COM_XMAP_CONFIG_PING_TIMEOUT_LABEL" />
+        <field name="ping_timeout" type="text" filter="integer" default="10" class="btn-group btn-group-yesno" label="COM_XMAP_CONFIG_PING_TIMEOUT_LABEL" description="COM_XMAP_CONFIG_PING_TIMEOUT_DESC" />
     </fieldset>
 </config>
