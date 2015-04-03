@@ -31,3 +31,18 @@
 [submodule "plugins/xmap/com_virtuemart"]
 	path = plugins/xmap/com_virtuemart
 	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-virtuemart.git
+[submodule "plugins/xmap/com_acymailing"]
+	path = plugins/xmap/com_acymailing
+	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-acymailing.git
+[submodule "plugins/xmap/com_jevents"]
+	path = plugins/xmap/com_jevents
+	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-jevents.git
+[submodule "plugins/xmap/com_adsmanager"]
+	path = plugins/xmap/com_adsmanager
+	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-adsmanager.git
+[submodule "plugins/xmap/com_phocadownload"]
+	path = plugins/xmap/com_phocadownload
+	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-phoca-download.git
+[submodule "plugins/xmap/com_phocagallery"]
+	path = plugins/xmap/com_phocagallery
+	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-phoca-gallery.git
