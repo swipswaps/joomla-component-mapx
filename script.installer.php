@@ -22,6 +22,44 @@ class com_xmapInstallerScript
     const JVERSION = 3.4;
 
     /**
+     * @var array outdated files from previous xmap version
+     */
+    protected $outdated_files = array(
+        // Backend
+        '/administrator/components/com_xmap/sitemap/tmpl/edit_legacy.php',
+        '/administrator/components/com_xmap/sitemap/tmpl/navigator.php',
+        '/administrator/components/com_xmap/sitemap/tmpl/navigator_class.php',
+        '/administrator/components/com_xmap/sitemap/tmpl/navigator_links.php',
+        '/administrator/components/com_xmap/sitemaps/tmpl/default_legacy.php',
+        '/administrator/components/com_xmap/sitemaps/tmpl/form.php',
+        '/administrator/components/com_xmap/sitemaps/tmpl/modal.php',
+        '/administrator/components/com_xmap/models/fields/modal/sitemaps.php',
+        '/administrator/components/com_xmap/models/fields/xmapmenus.php',
+        '/administrator/components/com_xmap/models/forms/extension.xml',
+        '/administrator/components/com_xmap/manifest.xml',
+        // Site
+        '/components/com_xmap/views/html/tmpl/default_class.php',
+        '/components/com_xmap/views/html/tmpl/default_items.php',
+        '/components/com_xmap/views/xml/tmpl/default_class.php',
+        '/components/com_xmap/views/xml/tmpl/default_items.php',
+        '/components/com_xmap/views/xml/tmpl/default_xsl.php',
+        '/components/com_xmap/controllers/ajax.json.php',
+    );
+
+    /**
+     * @var array outdated folders from previous xmap version
+     */
+    protected $outdated_folders = array(
+        // Backend
+        '/administrator/components/com_xmap/css',
+        '/administrator/components/com_xmap/elements',
+        '/administrator/components/com_xmap/images',
+        '/administrator/components/com_xmap/install',
+        // Site
+        '/components/com_xmap/assets',
+    );
+
+    /**
      * @return bool
      */
     public function preflight()
@@ -132,6 +170,8 @@ class com_xmapInstallerScript
         $this->postflightDeletePackage();
 
         $this->postflightDeleteUpdateserver();
+
+        $this->postflightDeleteOutdatedFilesAndFolders();
     }
 
     /**
@@ -176,6 +216,35 @@ class com_xmapInstallerScript
         } catch (RuntimeException $e)
         {
             // do nothing
+        }
+    }
+
+    /**
+     * delete outdated/unused files and folders from previous installation
+     */
+    protected function postflightDeleteOutdatedFilesAndFolders()
+    {
+        $failed = array('outdated/unused file/folder deletion failed:'); // TODO JText
+        foreach ($this->outdated_files as $file)
+        {
+            if (JFile::exists($file) && !JFile::delete($file))
+            {
+                $failed[] = $file;
+            }
+        }
+
+        foreach ($this->outdated_folders as $folder)
+        {
+            if (JFolder::exists($file) && !JFolder::delete($folder))
+            {
+                $failed[] = $folder;
+            }
+        }
+
+        if (count($failed) > 1)
+        {
+            $failed[] = 'please delete this files/folder manually'; // TODO JText
+            JFactory::getApplication()->enqueueMessage(implode('<br/>', $failed), 'warning');
         }
     }
 }
