@@ -227,7 +227,7 @@ class com_xmapInstallerScript
         $failed = array('outdated/unused file/folder deletion failed:'); // TODO JText
         foreach ($this->outdated_files as $file)
         {
-            if (JFile::exists($file) && !JFile::delete($file))
+            if (JFile::exists(JPATH_ROOT . $file) && !JFile::delete(JPATH_ROOT . $file))
             {
                 $failed[] = $file;
             }
@@ -235,7 +235,7 @@ class com_xmapInstallerScript
 
         foreach ($this->outdated_folders as $folder)
         {
-            if (JFolder::exists($file) && !JFolder::delete($folder))
+            if (JFolder::exists(JPATH_ROOT . $folder) && !JFolder::delete(JPATH_ROOT . $folder))
             {
                 $failed[] = $folder;
             }
