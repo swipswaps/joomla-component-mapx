@@ -99,6 +99,11 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
     );
 
     /**
+     * @var string base url
+     */
+    protected $base = '';
+
+    /**
      * @param stdClass $sitemap
      * @param array $items
      * @param array $extensions
@@ -108,6 +113,8 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
         parent::__construct($sitemap, $items, $extensions);
 
         $languageTag = JFactory::getLanguage()->getTag();
+
+        $this->base = JUri::getInstance()->toString(array('scheme', 'user', 'pass', 'host', 'port'));
 
         if (in_array($languageTag, array('zh-cn', 'zh-tw')))
         {
@@ -194,7 +201,7 @@ class XmapDisplayerXml extends XmapDisplayerAbstract
                 $link = $node->link;
             } else
             {
-                $link = rtrim(JUri::root(), '/') . JRoute::_($node->link);
+                $link = $this->base . JRoute::_($node->link);
             }
         }
 
