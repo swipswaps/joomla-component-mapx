@@ -1,48 +1,48 @@
 [submodule "plugins/xmap/com_k2"]
 	path = plugins/xmap/com_k2
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-k2.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-k2.git
 [submodule "plugins/xmap/com_weblinks"]
 	path = plugins/xmap/com_weblinks
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-weblinks.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-weblinks.git
 [submodule "plugins/xmap/com_akeebasubs"]
 	path = plugins/xmap/com_akeebasubs
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-akeeba-subscriptions.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-akeeba-subscriptions.git
 [submodule "plugins/xmap/com_simplecalendar"]
 	path = plugins/xmap/com_simplecalendar
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-simplecalendar.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-simplecalendar.git
 [submodule "plugins/xmap/com_tags"]
 	path = plugins/xmap/com_tags
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-tags.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-tags.git
 [submodule "plugins/xmap/com_jdownloads"]
 	path = plugins/xmap/com_jdownloads
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-jdownloads.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-jdownloads.git
 [submodule "plugins/xmap/com_garyscookbook"]
 	path = plugins/xmap/com_garyscookbook
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-gary-s-cookbook.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-garys-cookbook.git
 [submodule "plugins/xmap/com_sobipro"]
 	path = plugins/xmap/com_sobipro
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-sobipro.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-sobipro.git
 [submodule "plugins/xmap/com_kunena"]
 	path = plugins/xmap/com_kunena
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-kunena.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-kunena.git
 [submodule "plugins/xmap/com_mtree"]
 	path = plugins/xmap/com_mtree
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-mosets-tree.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-mosets-tree.git
 [submodule "plugins/xmap/com_virtuemart"]
 	path = plugins/xmap/com_virtuemart
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-virtuemart.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-virtuemart.git
 [submodule "plugins/xmap/com_acymailing"]
 	path = plugins/xmap/com_acymailing
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-acymailing.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-acymailing.git
 [submodule "plugins/xmap/com_jevents"]
 	path = plugins/xmap/com_jevents
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-jevents.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-jevents.git
 [submodule "plugins/xmap/com_adsmanager"]
 	path = plugins/xmap/com_adsmanager
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-adsmanager.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-adsmanager.git
 [submodule "plugins/xmap/com_phocadownload"]
 	path = plugins/xmap/com_phocadownload
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-phoca-download.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-phoca-download.git
 [submodule "plugins/xmap/com_phocagallery"]
 	path = plugins/xmap/com_phocagallery
-	url = git@bitbucket.org:b2un0/joomla-plugin-xmap-phoca-gallery.git
+	url = git@github.com:b2un0/joomla-plugin-xmap-phoca-gallery.git
